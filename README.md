@@ -32,10 +32,10 @@ PersonaShield is a real-time social engineering detection system that goes beyon
 └── README.md             # Project documentation  
 \`\`\`
 
-Getting Started
-bash
-# Clone the repo
-git clone https://github.com/yourusername/PersonaShield
+##  Getting Started
+
+# Clone the repository
+git clone https://github.com/ArunimaChakraborty2004/PersonaShield
 
 # Set up Python virtual environment
 python -m venv env
@@ -46,6 +46,7 @@ pip install -r requirements.txt
 
 # Run Flask server
 python app.py
+
 Ensure MongoDB is running locally or on a hosted service. Open index.html in a browser and test with sample messages to see live threat detection.
 
 Sample Messages & Scores
