@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PersonaShield</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body>
+  <header>
+    <div class="header-logo-title">
+      <img src="avatar.png" alt="PersonaShield Logo" class="header-logo big-header-logo">
+      <h1 class="centered-title">
+        <span class="animated-shield"><i class="fas fa-shield-alt"></i></span>
+        PersonaShield
+      </h1>
+    </div>
+  </header>
+
+  <div class="main-layout">
+    <main>
+      <!-- Bot welcome message -->
+      <div id="chat-box">
+        <div class="chat-message bot-message">
+          <img src="avatar.png" alt="Bot" class="avatar">
+          <div class="message-content system-message">
+            Welcome to PersonaShield! How can I help you today?
+          </div>
+        </div>
+      </div>
+
+      <!-- Typing Indicator -->
+      <div id="typing-indicator" style="display:none;">
+        <img src="avatar.png" alt="Bot" class="avatar">
+        <span>PersonaShield is typing...</span>
+      </div>
+
+      <!-- Quick Replies -->
+      <div id="quick-replies">
+        <button onclick="quickReply('What can you do?')">What can you do?</button>
+        <button onclick="quickReply('Tell me about privacy')">Tell me about privacy</button>
+        <button onclick="quickReply('Help!')">Help!</button>
+      </div>
+
+      <!-- System Response Box -->
+      <div id="system-response" style="
+        margin-top: 12px;
+        padding: 10px 16px;
+        background-color: #222;
+        border-left: 4px solid #66bfff;
+        border-radius: 4px;
+        font-size: 0.95rem;
+        color: #ccc;
+      "></div>
+
+      <!-- Input Section -->
+      <div id="input-area">
+        <img src="avatar.png" alt="You" class="avatar user-avatar">
+        <input type="text" id="message-input" placeholder="Type a message..." onkeydown="if(event.key==='Enter'){sendMessage();}">
+        <button onclick="sendMessage()">Send</button>
+        <button onclick="clearChat()" title="Clear chat">🗑️</button>
+      </div>
+
+      <!-- Alert Panel -->
+      <div id="alert-panel"></div>
+    </main>
+  </div>
+
+  <!-- View Dashboard Button -->
+  <div style="text-align: center; margin-top: 20px;">
+    <a href="dashboard.html" style="
+      padding: 10px 18px;
+      background-color: #f4f4f4;
+      color: #333;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    ">
+      📊 View Threat Logs
+    </a>
+  </div>
+
+  <!-- Footer -->
+  <footer style="
+    background: #1f1f1f;
+    color: #ccc;
+    text-align: center;
+    padding: 20px 0;
+    font-size: 0.9rem;
+    margin-top: 50px;">
+    <p>&copy; 2025 PersonaShield. All rights reserved.</p>
+    <p>Made with ❤️ by <span style="color:#00ffaa;">Arunima</span></p>
+  </footer>
+
+  <!-- Quick Reply Script -->
+ <script>
+function quickReply(type) {
+  let responseText = "";
+
+  if (type === "What can you do?") {
+    responseText = `
+      🛡️ <strong>What can PersonaShield do?</strong><br>
+      - Detect social engineering threats<br>
+      - Score risky messages in real-time<br>
+      - Show <em>why</em> something was flagged<br>
+      - Let users give feedback for accuracy<br>
+      - Visualize patterns in phishing & manipulation
+    `;
+  } else if (type === "Tell me about privacy") {
+    responseText = `
+      🔐 <strong>Privacy First:</strong><br>
+      PersonaShield doesn’t store personal chats. Feedback logs are anonymized and used solely for system insights. Learn more at: <a href="https://privacy.microsoft.com/en-us/privacystatement" target="_blank" style="color: #66bfff;">Privacy Policy</a>
+    `;
+  } else if (type === "Help!") {
+    responseText = `
+      💬 <strong>Need help?</strong><br>
+      Try typing a message like:<br>
+      - "Reset my login credentials"<br>
+      - "Download attached document"<br>
+      PersonaShield will analyze the threat level and explain it instantly.
+    `;
+  }
+
+  const box = document.getElementById("system-response");
+  box.innerHTML = responseText;
+  box.classList.add("show");
+}
+</script>
+
+
+  <!-- App Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
