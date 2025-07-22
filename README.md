@@ -19,17 +19,19 @@ PersonaShield is a real-time social engineering detection system that goes beyon
 - **Security Concepts:** Social engineering patterns, NLP scoring, explainable AI
 ##  File Structure Overview
 
-plaintext
-├── index.html               # Chat interface
-├── dashboard.html           # Threat logs + analytics
-├── style.css                # Styling and UI elements
-├── app.js                   # Frontend threat logic
-├── dashboard.js             # Chart & table rendering
-├── app.py                   # Flask API backend
-├── db.py                    # MongoDB interactions
-├── threat_detector.py       # NLP-based scoring model
-├── avatar.png               # Bot image
-├── README.md                # Project documentation
+\`\`\`plaintext
+├── index.html            # Chat interface  
+├── dashboard.html        # Threat logs + analytics  
+├── style.css             # Styling and UI elements  
+├── app.js                # Frontend threat logic  
+├── dashboard.js          # Chart & table rendering  
+├── app.py                # Flask API backend  
+├── db.py                 # MongoDB interactions  
+├── threat_detector.py    # NLP-based scoring model  
+├── avatar.png            # Bot display image  
+└── README.md             # Project documentation  
+\`\`\`
+
 Getting Started
 bash
 # Clone the repo
