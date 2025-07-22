@@ -19,7 +19,7 @@ PersonaShield is a real-time social engineering detection system that goes beyon
 - **Security Concepts:** Social engineering patterns, NLP scoring, explainable AI
 ##  File Structure Overview
 
-\`\`\`plaintext
+\`\`\`
 ├── index.html            # Chat interface  
 ├── dashboard.html        # Threat logs + analytics  
 ├── style.css             # Styling and UI elements  
@@ -49,7 +49,7 @@ python app.py
 
 Ensure MongoDB is running locally or on a hosted service. Open index.html in a browser and test with sample messages to see live threat detection.
 
-Sample Messages & Scores
+## Sample Messages & Scores
 plaintext
 "Please confirm your password and upload the credentials."
 → Score: 8 | Type: Info Theft
