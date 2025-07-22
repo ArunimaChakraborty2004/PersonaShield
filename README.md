@@ -59,14 +59,15 @@ plaintext
 
 "Don't tell anyone. Keep this confidential."
 → Score: 7 | Type: Secrecy
-Future Scope
-Gemini/LLM-based tone detection with confidence scoring
-Chrome extension for real-time scanning in browser forms
-Multi-language support (English, Hindi, Turkish)
-Threat timeline storytelling across users
-Adaptive feedback-based tuning engine
+##  Future Scope
 
-Author
+-  Gemini/LLM-based tone detection with confidence scoring  
+-  Chrome extension for browser-based real-time scanning  
+-  Multi-language support (English, Hindi, Turkish)  
+-  Threat timeline storytelling across users  
+-  Adaptive feedback-based tuning engine
+
+## Author
 Crafted with clarity & care by Arunima Chakraborty  BTech CSE, Christ University Cybersecurity Enthusiast
 
 “It’s not just about detecting threats it’s about helping users understand them.” — PersonaShield
