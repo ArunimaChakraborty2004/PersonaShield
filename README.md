@@ -1,73 +1,193 @@
 # 🛡️ PersonaShield
-**Making cybersecurity human.**
-PersonaShield is a real-time social engineering detection system that goes beyond traditional threat flagging. Designed with empathy and explainability at its core, it helps users understand what's risky, why it’s flagged, and how to respond turning complex message analysis into a conversation.
-##  Features
-- **Threat Scoring & Type Detection**  
-  Flags manipulation tactics like urgency, secrecy, impersonation, and information theft.
-- **Explainability Panels**  
-  Shows matched keywords and trigger phrases for every flagged message.
-- **Interactive Dashboard**  
-  Displays threat type frequency, user feedback, and search filtering by message content.
-- **Quick Replies & Typing Indicator**  
-  Chat-like interface that feels intuitive and responsive.
-##  Tech Stack
 
-- **Frontend:** HTML, CSS (Tailwind), JavaScript  
-- **Backend:** Python Flask (REST API)  
-- **Database:** MongoDB  
-- **Visualization:** Chart.js  
-- **Security Concepts:** Social engineering patterns, NLP scoring, explainable AI
-##  File Structure Overview
+## AI-Powered Social Engineering & Phishing Detection Platform
 
-\`\`\`
-├── index.html            # Chat interface  
-├── dashboard.html        # Threat logs + analytics  
-├── style.css             # Styling and UI elements  
-├── app.js                # Frontend threat logic  
-├── dashboard.js          # Chart & table rendering  
-├── app.py                # Flask API backend  
-├── db.py                 # MongoDB interactions  
-├── threat_detector.py    # NLP-based scoring model  
-├── avatar.png            # Bot display image  
-└── README.md             # Project documentation  
-\`\`\`
+PersonaShield is a real-time cybersecurity application that detects phishing attempts, social engineering attacks, impersonation, credential theft, urgency manipulation, and other digital threats.
 
-##  Getting Started
+Unlike traditional keyword-based filters, PersonaShield combines AI-powered contextual analysis with an explainable threat detection engine, helping users understand not only what is dangerous, but why it is dangerous and how to respond safely.
 
-# Clone the repository
-git clone https://github.com/ArunimaChakraborty2004/PersonaShield
+---
 
-# Set up Python virtual environment
-python -m venv env
-source env/bin/activate
+## 🚀 Live Features
 
-# Install backend dependencies
-pip install -r requirements.txt
+### 🤖 AI-Powered Threat Detection
 
-# Run Flask server
-python app.py
+Uses Cohere AI to analyze message context and identify phishing, impersonation, information theft, secrecy tactics, and social engineering patterns.
 
-Ensure MongoDB is running locally or on a hosted service. Open index.html in a browser and test with sample messages to see live threat detection.
+### 🛡️ Rule-Based Fallback Engine
 
-## Sample Messages & Scores
-plaintext
-"Please confirm your password and upload the credentials."
-→ Score: 8 | Type: Info Theft
+Continues detecting threats even if AI services are unavailable, ensuring reliability and uninterrupted protection.
 
-"This is your final call. Respond ASAP to avoid account lockout."
-→ Score: 9 | Type: Urgency
+### 📊 Risk Scoring System
 
-"Don't tell anyone. Keep this confidential."
-→ Score: 7 | Type: Secrecy
-##  Future Scope
+Assigns threat scores from 0–10 and categorizes messages by severity:
 
--  Gemini/LLM-based tone detection with confidence scoring  
--  Chrome extension for browser-based real-time scanning  
--  Multi-language support (English, Hindi, Turkish)  
--  Threat timeline storytelling across users  
--  Adaptive feedback-based tuning engine
+* Safe
+* Low Risk
+* Medium Risk
+* High Risk
+* Critical Risk
 
-## Author
-Crafted with clarity & care by Arunima Chakraborty  BTech CSE, Christ University Cybersecurity Enthusiast
+### 🔍 Explainable Security Analysis
 
-“It’s not just about detecting threats it’s about helping users understand them.” — PersonaShield
+Provides detailed explanations for every detection, including:
+
+* Threat category
+* Matched keywords
+* Trigger phrases
+* AI-generated reasoning
+* Recommended actions
+
+### 📈 Threat Intelligence Dashboard
+
+Monitor and analyze:
+
+* Threat frequency
+* Risk score distribution
+* Historical threat logs
+* Threat type statistics
+* Search and filtering
+
+### 💾 Threat Log Management
+
+Stores all analysis results in MongoDB for auditing, analytics, and future review.
+
+### ☁️ Cloud Deployment
+
+Deployed on Render with MongoDB integration and environment-based secret management.
+
+---
+
+## 🛠️ Technology Stack
+
+### Frontend
+
+* HTML5
+* CSS3
+* Tailwind CSS
+* JavaScript
+
+### Backend
+
+* Python
+* Flask
+* REST APIs
+
+### AI & Security
+
+* Cohere AI
+* Social Engineering Detection Engine
+* Explainable Threat Analysis
+* Risk Scoring Framework
+
+### Database
+
+* MongoDB
+
+### Visualization
+
+* Chart.js
+
+### Deployment
+
+* Render
+
+---
+
+## 📂 Project Structure
+
+```text
+PersonaShield/
+│
+├── app.py                  # Flask API Backend
+├── ai_analyzer.py          # Cohere AI Analysis Engine
+├── threat_detector.py      # Rule-Based Threat Detection
+├── db.py                   # MongoDB Integration
+│
+├── index.html              # User Chat Interface
+├── dashboard.html          # Threat Analytics Dashboard
+│
+├── app.js                  # Frontend Logic
+├── dashboard.js            # Dashboard Rendering
+├── style.css               # Styling
+│
+├── requirements.txt
+├── runtime.txt
+├── README.md
+│
+└── assets/
+```
+
+## 🔎 Example Threat Analysis
+
+### Message
+
+```text
+Urgent action required! Our security team detected suspicious activity on your account. Verify your identity immediately and upload your login credentials using the secure link below. Do not tell anyone about this investigation.
+```
+
+### Detection Result
+
+```json
+{
+  "score": 7,
+  "severity": "high",
+  "threat_type": "Phishing",
+  "ai_powered": true
+}
+```
+
+### AI Explanation
+
+The message creates urgency and fear by claiming suspicious account activity. It requests sensitive information and instructs the recipient to keep the interaction secret, which are common characteristics of phishing and social engineering attacks.
+
+---
+
+## 🎯 Key Capabilities
+
+✔ Phishing Detection
+
+✔ Credential Theft Detection
+
+✔ Impersonation Detection
+
+✔ Urgency Manipulation Detection
+
+✔ Secrecy-Based Social Engineering Detection
+
+✔ Explainable AI Analysis
+
+✔ Real-Time Threat Monitoring
+
+✔ Cloud Deployment
+
+✔ MongoDB Threat Logging
+
+---
+
+## 🔮 Future Enhancements
+
+* URL Reputation Analysis
+* VirusTotal Integration
+* AbuseIPDB Integration
+* Threat Intelligence Feed Aggregation
+* Browser Extension
+* Email Threat Scanning
+* Multi-Language Detection
+* User Authentication & Roles
+* PDF Threat Reports
+* Adaptive Threat Learning
+
+---
+
+## 👨‍💻 Author
+
+Arunima Chakraborty
+
+B.Tech Computer Science & Engineering
+
+Cybersecurity & AI Enthusiast
+
+---
+
+"Cybersecurity is not only about detecting threats — it's about helping people understand and respond to them."
