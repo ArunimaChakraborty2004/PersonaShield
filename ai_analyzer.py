@@ -52,6 +52,7 @@ MESSAGE: "{message}"
 Respond ONLY with valid JSON (no markdown, no extra text) in this exact format:
 {{
   "score": <integer 0-10>,
+  "confidence": <integer 0-100>,
   "type": "<one of: Safe, Urgency, Phishing, Impersonation, Info Theft, Redirect Scam, Secrecy, Manipulation, Multiple Threats>",
   "severity": "<one of: safe, low, medium, high, critical>",
   "explanation": "<2-3 sentence human-readable explanation of what threat tactics were found and why>",
