@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv("En.env")
+
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from ai_analyzer import analyze_message
