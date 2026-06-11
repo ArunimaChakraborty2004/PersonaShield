@@ -1,157 +1,411 @@
-function loadLogs() {
-  fetch('http://localhost:5000/api/logs')
-    .then(response => {
-      if (!response.ok) throw new Error("Failed to fetch logs");
-      return response.json();
-    })
-    .then(data => {
-      displayLogs(data);
-      renderThreatChart(data);
-    })
-    .catch(error => console.error("Error loading logs:", error));
+/* ============================================================
+   PersonaShield — Dashboard Logic (dashboard.js)
+   ============================================================ */
+
+let allLogs = [];
+let filteredLogs = [];
+let currentPage = 1;
+const PAGE_SIZE = 12;
+let sortKey = 'timestamp';
+let sortAsc = false;
+let donutChart, lineChart;
+
+// ─── Init ────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', loadAll);
+
+async function loadAll() {
+  await Promise.all([loadSummary(), loadLogs(), loadTimeline()]);
 }
 
-function searchLogs() {
-  const query = document.getElementById('search-input').value.trim();
-  fetch(`http://localhost:5000/api/search?q=${encodeURIComponent(query)}`)
-    .then(response => {
-      if (!response.ok) throw new Error("Search failed");
-      return response.json();
-    })
-    .then(data => {
-      displayLogs(data);
-      renderThreatChart(data);
-    })
-    .catch(error => console.error("Search error:", error));
+// ─── Summary Cards ───────────────────────────────────────────────
+async function loadSummary() {
+  try {
+    const res  = await fetch('/api/summary');
+    const data = await res.json();
+    animateCount('ds-total',   data.total);
+    animateCount('ds-threats', data.threats);
+    animateCount('ds-safe',    data.safe);
+    document.getElementById('ds-avg').textContent = data.avg_score ?? '0';
+    loadStats(); // load donut after summary
+  } catch (e) {
+    console.error('Summary error', e);
+  }
 }
 
-function displayLogs(logs) {
-  const tbody = document.getElementById('log-entries');
-  tbody.innerHTML = "";
+function animateCount(id, target) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  let current = 0;
+  const step = Math.ceil(target / 40);
+  const timer = setInterval(() => {
+    current += step;
+    if (current >= target) { current = target; clearInterval(timer); }
+    el.textContent = current;
+  }, 30);
+}
 
-  logs.forEach(log => {
-    console.log("Message:", log.text);
-    console.log("matched_keywords:", log.matched_keywords);
-    console.log("matched_phrases:", log.matched_phrases);
+// ─── Donut Chart ─────────────────────────────────────────────────
+async function loadStats() {
+  try {
+    const res  = await fetch('/api/stats');
+    const data = await res.json();
 
-    const triggers = [
-      ...(log.matched_keywords ?? []),
-      ...(log.matched_phrases ?? [])
+    const labels = data.map(d => d._id || 'Unknown');
+    const counts = data.map(d => d.count);
+    const colors = [
+      '#3b82f6','#ef4444','#f59e0b','#10b981',
+      '#8b5cf6','#06b6d4','#ec4899','#84cc16'
     ];
 
-    const triggerList = triggers.length
-      ? `<ul>${triggers.map(t => `<li>${t}</li>`).join('')}</ul>`
-      : `<p style="color:#888;">⚠️ No triggers matched (possibly safe or legacy log)</p>`;
+    const ctx = document.getElementById('donutChart').getContext('2d');
+    if (donutChart) donutChart.destroy();
 
-    const explainPanel = `
-      <details style="margin-top: 8px;">
-        <summary style="cursor:pointer; color:#aaa;">Why was this flagged?</summary>
-        <div style="padding: 8px; color: #ccc;">
-          <strong>Threat Type:</strong> ${log.threat_type}<br/>
-          <strong>Score:</strong> ${log.score}<br/>
-          <strong>Triggers:</strong> ${triggerList}
-        </div>
-      </details>
-    `;
-
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${log.text}${explainPanel}</td>
-      <td>${log.score}</td>
-      <td>${log.threat_type}</td>
-      <td>${new Date(log.timestamp).toLocaleString()}</td>
-      <td>${log.feedback || "Not rated"}</td>
-      <td>
-        <button onclick="submitFeedback('${log._id}', 'accurate')">✅</button>
-        <button onclick="submitFeedback('${log._id}', 'false_positive')">❌</button>
-      </td>
-    `;
-    tbody.appendChild(row);
-  });
-}
-
-function submitFeedback(id, feedbackValue) {
-  fetch(`http://localhost:5000/api/feedback/${id}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ feedback: feedbackValue })
-  })
-  .then(response => {
-    if (!response.ok) throw new Error("Feedback failed");
-    return response.json();
-  })
-  .then(() => loadLogs())
-  .catch(error => console.error("Feedback error:", error));
-}
-
-function renderThreatChart(logs) {
-  const frequency = {};
-
-  logs.forEach(log => {
-    const type = log.threat_type || "Safe";
-    frequency[type] = (frequency[type] || 0) + 1;
-  });
-
-  const labels = Object.keys(frequency);
-  const counts = Object.values(frequency);
-
-  const ctx = document.getElementById('threatChart').getContext('2d');
-
-  if (window.threatChartInstance) {
-    window.threatChartInstance.destroy();
-  }
-
-  window.threatChartInstance = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: 'Threat Count',
-        data: counts,
-        backgroundColor: '#ff6384',
-        borderColor: '#ff3c6f',
-        borderWidth: 1
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: {
-          labels: {
-            color: '#ccc',
-            font: { size: 14 }
-          }
-        },
-        title: {
-          display: true,
-          text: 'Threat Types Detected',
-          color: '#eee',
-          font: { size: 18 }
-        }
+    donutChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [{
+          data: counts,
+          backgroundColor: colors.slice(0, labels.length),
+          borderColor: 'rgba(5,13,26,0.8)',
+          borderWidth: 3,
+          hoverOffset: 8
+        }]
       },
-      scales: {
-        x: {
-          ticks: { color: '#ccc', font: { size: 14 } },
-          title: {
-            display: true,
-            text: 'Threat Type',
-            color: '#ccc',
-            font: { size: 16 }
+      options: {
+        responsive: true,
+        cutout: '68%',
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#94a3b8',
+              font: { size: 11, family: 'Inter' },
+              padding: 14,
+              boxWidth: 12,
+              boxHeight: 12
+            }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(10,22,44,0.95)',
+            titleColor: '#f0f6ff',
+            bodyColor: '#94a3b8',
+            borderColor: 'rgba(59,130,246,0.3)',
+            borderWidth: 1
           }
         },
-        y: {
-          ticks: { color: '#ccc', font: { size: 14 } },
-          title: {
-            display: true,
-            text: 'Count',
-            color: '#ccc',
-            font: { size: 16 }
+        animation: { animateScale: true, duration: 900 }
+      }
+    });
+  } catch(e) { console.error('Stats error', e); }
+}
+
+// ─── Line Chart ───────────────────────────────────────────────────
+async function loadTimeline() {
+  try {
+    const res  = await fetch('/api/timeline?days=7');
+    const data = await res.json();
+
+    const labels  = data.map(d => {
+      const date = new Date(d._id);
+      return date.toLocaleDateString('en', { month: 'short', day: 'numeric' });
+    });
+    const total   = data.map(d => d.count);
+    const threats = data.map(d => d.threats);
+
+    const ctx = document.getElementById('lineChart').getContext('2d');
+    if (lineChart) lineChart.destroy();
+
+    lineChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Total Scans',
+            data: total,
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59,130,246,0.08)',
+            pointBackgroundColor: '#3b82f6',
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            fill: true,
+            tension: 0.4
+          },
+          {
+            label: 'Threats',
+            data: threats,
+            borderColor: '#ef4444',
+            backgroundColor: 'rgba(239,68,68,0.07)',
+            pointBackgroundColor: '#ef4444',
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            fill: true,
+            tension: 0.4
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: {
+            labels: {
+              color: '#94a3b8',
+              font: { size: 11, family: 'Inter' },
+              boxWidth: 12, boxHeight: 12
+            }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(10,22,44,0.95)',
+            titleColor: '#f0f6ff',
+            bodyColor: '#94a3b8',
+            borderColor: 'rgba(59,130,246,0.3)',
+            borderWidth: 1
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(255,255,255,0.04)' },
+            ticks: { color: '#64748b', font: { size: 11 } }
+          },
+          y: {
+            grid: { color: 'rgba(255,255,255,0.04)' },
+            ticks: { color: '#64748b', font: { size: 11 }, stepSize: 1 },
+            beginAtZero: true
           }
         }
       }
-    }
-  });
+    });
+  } catch(e) {
+    console.error('Timeline error', e);
+    // Show empty chart
+    const ctx = document.getElementById('lineChart').getContext('2d');
+    if (lineChart) lineChart.destroy();
+    lineChart = new Chart(ctx, {
+      type: 'line',
+      data: { labels: ['No data'], datasets: [{ label: 'Scans', data: [0] }] },
+      options: { responsive: true }
+    });
+  }
 }
 
-// ✅ Initial page load
-window.onload = loadLogs;
+// ─── Logs Table ───────────────────────────────────────────────────
+async function loadLogs() {
+  try {
+    const res = await fetch('/api/logs?limit=200');
+    allLogs   = await res.json();
+    filteredLogs = [...allLogs];
+    currentPage  = 1;
+    renderTable();
+  } catch(e) {
+    console.error('Logs error', e);
+    document.getElementById('log-entries').innerHTML =
+      '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:2rem;">Failed to load logs.</td></tr>';
+  }
+}
+
+function renderTable() {
+  const tbody  = document.getElementById('log-entries');
+  const start  = (currentPage - 1) * PAGE_SIZE;
+  const page   = filteredLogs.slice(start, start + PAGE_SIZE);
+
+  if (page.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:2rem;">No logs found.</td></tr>';
+    updatePagination();
+    return;
+  }
+
+  tbody.innerHTML = page.map(entry => {
+    const score    = entry.score ?? 0;
+    const color    = scoreColor(score);
+    const barPct   = (score / 10) * 100;
+    const severity = entry.severity || scoreToSeverity(score);
+    const badgeCls = severityBadge(severity);
+    const typeLabel = entry.threat_type || 'Safe';
+    const aiTag    = entry.ai_powered
+      ? '<span style="font-size:0.7rem;color:var(--accent-purple);font-weight:600;">🤖 AI</span>'
+      : '<span style="font-size:0.7rem;color:var(--text-muted);">Rule</span>';
+    const ts       = entry.timestamp
+      ? new Date(entry.timestamp).toLocaleString('en', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+      : '—';
+    const msg = escHtml((entry.text || '').substring(0, 80)) + (entry.text?.length > 80 ? '…' : '');
+
+    // Expandable explanation
+    const expl = entry.explanation
+      ? `<div style="margin-top:0.5rem;font-size:0.76rem;color:var(--text-muted);font-style:italic;border-top:1px solid var(--border);padding-top:0.4rem;">${escHtml(entry.explanation.substring(0, 120))}…</div>`
+      : '';
+
+    return `
+      <tr>
+        <td class="msg-cell" title="${escHtml(entry.text || '')}">
+          ${msg}${expl}
+        </td>
+        <td>
+          <div class="score-bar-wrap">
+            <div class="score-bar">
+              <div class="score-bar-fill" style="width:${barPct}%;background:${color};"></div>
+            </div>
+            <span class="score-text" style="color:${color};">${score}/10</span>
+          </div>
+        </td>
+        <td><span class="threat-badge ${badgeCls}" style="font-size:0.73rem;">${escHtml(typeLabel)}</span></td>
+        <td>${aiTag}</td>
+        <td style="color:var(--text-muted);font-size:0.8rem;">${ts}</td>
+        <td>
+          <select class="feedback-select" onchange="submitFeedback('${entry._id}', this.value)">
+            <option value="">Rate...</option>
+            <option value="correct"   ${entry.feedback === 'correct'   ? 'selected' : ''}>✓ Correct</option>
+            <option value="incorrect" ${entry.feedback === 'incorrect' ? 'selected' : ''}>✗ Wrong</option>
+            <option value="unsure"    ${entry.feedback === 'unsure'    ? 'selected' : ''}>? Unsure</option>
+          </select>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  updatePagination();
+}
+
+function updatePagination() {
+  const total   = filteredLogs.length;
+  const pages   = Math.ceil(total / PAGE_SIZE);
+  const label   = document.getElementById('log-count-label');
+  const buttons = document.getElementById('pagination-btns');
+
+  label.textContent = `${total} log${total !== 1 ? 's' : ''}`;
+
+  if (pages <= 1) { buttons.innerHTML = ''; return; }
+
+  let html = `
+    <button class="page-btn" onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled style="opacity:0.4;"' : ''}>
+      <i class="fas fa-chevron-left"></i>
+    </button>
+  `;
+  for (let p = 1; p <= Math.min(pages, 7); p++) {
+    html += `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="goPage(${p})">${p}</button>`;
+  }
+  if (pages > 7) html += `<span style="color:var(--text-muted);padding:0 0.25rem;">…${pages}</span>`;
+  html += `
+    <button class="page-btn" onclick="goPage(${currentPage + 1})" ${currentPage === pages ? 'disabled style="opacity:0.4;"' : ''}>
+      <i class="fas fa-chevron-right"></i>
+    </button>
+  `;
+  buttons.innerHTML = html;
+}
+
+function goPage(p) {
+  const pages = Math.ceil(filteredLogs.length / PAGE_SIZE);
+  if (p < 1 || p > pages) return;
+  currentPage = p;
+  renderTable();
+}
+
+// ─── Filter & Sort ───────────────────────────────────────────────
+function filterTable() {
+  const q    = (document.getElementById('log-search').value || '').toLowerCase();
+  const type = document.getElementById('filter-type').value;
+
+  filteredLogs = allLogs.filter(entry => {
+    const matchText = !q || (entry.text || '').toLowerCase().includes(q);
+    const matchType = !type || entry.threat_type === type;
+    return matchText && matchType;
+  });
+
+  currentPage = 1;
+  renderTable();
+}
+
+function sortTable(key) {
+  if (sortKey === key) sortAsc = !sortAsc;
+  else { sortKey = key; sortAsc = false; }
+
+  filteredLogs.sort((a, b) => {
+    const va = a[key] ?? '';
+    const vb = b[key] ?? '';
+    if (va < vb) return sortAsc ? -1 : 1;
+    if (va > vb) return sortAsc ?  1 : -1;
+    return 0;
+  });
+
+  currentPage = 1;
+  renderTable();
+}
+
+// ─── Search ──────────────────────────────────────────────────────
+function searchLogs() {
+  filterTable();
+}
+
+// ─── Feedback ────────────────────────────────────────────────────
+async function submitFeedback(id, value) {
+  if (!value) return;
+  try {
+    await fetch(`/api/feedback/${id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ feedback: value })
+    });
+  } catch(e) { console.error('Feedback error', e); }
+}
+
+// ─── CSV Export ──────────────────────────────────────────────────
+function exportCSV() {
+  const header = ['Message', 'Score', 'Threat Type', 'Severity', 'AI Powered', 'Timestamp', 'Feedback'];
+  const rows   = allLogs.map(e => [
+    `"${(e.text || '').replace(/"/g, '""')}"`,
+    e.score ?? 0,
+    e.threat_type || '',
+    e.severity || '',
+    e.ai_powered ? 'Yes' : 'No',
+    e.timestamp || '',
+    e.feedback || ''
+  ]);
+
+  const csv  = [header, ...rows].map(r => r.join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `personashield_logs_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ─── Helpers ────────────────────────────────────────────────────
+function scoreColor(score) {
+  if (score === 0) return '#10b981';
+  if (score <= 3)  return '#10b981';
+  if (score <= 5)  return '#f59e0b';
+  if (score <= 7)  return '#ef4444';
+  return '#dc2626';
+}
+
+function scoreToSeverity(score) {
+  if (score === 0) return 'safe';
+  if (score <= 3)  return 'safe';
+  if (score <= 5)  return 'medium';
+  if (score <= 7)  return 'high';
+  return 'critical';
+}
+
+function severityBadge(severity) {
+  const map = { safe: 'badge-safe', low: 'badge-safe', medium: 'badge-medium', high: 'badge-high', critical: 'badge-critical' };
+  return map[severity] || 'badge-safe';
+}
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+window.loadAll       = loadAll;
+window.filterTable   = filterTable;
+window.sortTable     = sortTable;
+window.searchLogs    = searchLogs;
+window.submitFeedback = submitFeedback;
+window.exportCSV     = exportCSV;
+window.goPage        = goPage;

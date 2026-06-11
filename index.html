@@ -2,135 +2,191 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>PersonaShield</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PersonaShield — AI Threat Detection</title>
+  <meta name="description" content="PersonaShield uses AI to detect phishing, social engineering, and manipulation tactics in real-time.">
   <link rel="stylesheet" href="style.css">
-  <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 <body>
-  <header>
-    <div class="header-logo-title">
-      <img src="avatar.png" alt="PersonaShield Logo" class="header-logo big-header-logo">
-      <h1 class="centered-title">
-        <span class="animated-shield"><i class="fas fa-shield-alt"></i></span>
-        PersonaShield
-      </h1>
-    </div>
-  </header>
 
-  <div class="main-layout">
-    <main>
-      <!-- Bot welcome message -->
-      <div id="chat-box">
-        <div class="chat-message bot-message">
-          <img src="avatar.png" alt="Bot" class="avatar">
-          <div class="message-content system-message">
-            Welcome to PersonaShield! How can I help you today?
+<div class="app-shell">
+
+  <!-- ======= SIDEBAR ======= -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <img src="avatar.png" alt="PersonaShield" class="brand-logo">
+      <div>
+        <div class="brand-name">PersonaShield</div>
+        <div class="brand-tagline">AI Security</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">Main</span>
+      <a href="/" class="nav-item active" id="nav-chat">
+        <i class="fas fa-comment-shield"></i> Chat Analyzer
+      </a>
+      <a href="/dashboard" class="nav-item" id="nav-dashboard">
+        <i class="fas fa-chart-line"></i> Dashboard
+      </a>
+      <a href="/scanner" class="nav-item" id="nav-scanner">
+        <i class="fas fa-search-plus"></i> Bulk Scanner
+      </a>
+      <span class="nav-section-label">Info</span>
+      <a href="#" class="nav-item" onclick="showAbout(); return false;">
+        <i class="fas fa-shield-halved"></i> About
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <p>Made with ❤️ by <span>Arunima</span></p>
+      <p style="margin-top:4px;">© 2025 PersonaShield</p>
+    </div>
+  </aside>
+
+  <!-- ======= MAIN CONTENT ======= -->
+  <div class="main-content">
+
+    <!-- Header -->
+    <header class="top-header">
+      <div class="page-title">
+        <i class="fas fa-comment-shield" style="color:var(--accent-blue);margin-right:0.5rem;"></i>
+        <span>Chat Analyzer</span>
+      </div>
+      <div class="header-status">
+        <div class="status-dot"></div>
+        AI System Online
+      </div>
+    </header>
+
+    <!-- Body -->
+    <div class="page-body">
+
+      <!-- ===== CHAT PANEL ===== -->
+      <div class="glass-card chat-panel" id="chat-card">
+
+        <div class="chat-panel-header">
+          <div class="panel-icon"><i class="fas fa-robot"></i></div>
+          <div>
+            <h2>PersonaShield Assistant</h2>
+            <p>Type any message to analyze it for threats</p>
           </div>
+        </div>
+
+        <!-- Messages -->
+        <div id="chat-box">
+          <!-- Welcome message inserted by JS -->
+        </div>
+
+        <!-- Typing -->
+        <div id="typing-indicator" class="hidden">
+          <img src="avatar.png" alt="Bot" class="msg-avatar">
+          <div class="typing-dots">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+
+        <!-- Quick Replies -->
+        <div id="quick-replies">
+          <button class="quick-btn" onclick="quickReply('What can you do?')">
+            <i class="fas fa-bolt"></i> Capabilities
+          </button>
+          <button class="quick-btn" onclick="quickReply('Tell me about privacy')">
+            <i class="fas fa-lock"></i> Privacy
+          </button>
+          <button class="quick-btn" onclick="quickReply('Help!')">
+            <i class="fas fa-circle-question"></i> Help
+          </button>
+          <button class="quick-btn" onclick="quickReply('sample phishing')">
+            <i class="fas fa-fish"></i> Test Phishing
+          </button>
+        </div>
+
+        <!-- Input -->
+        <div id="input-area">
+          <input type="text" id="message-input"
+                 placeholder="Type a message to analyze..."
+                 onkeydown="if(event.key==='Enter'){sendMessage();}">
+          <button class="send-btn" onclick="sendMessage()" title="Send & Analyze">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+          <button class="clear-btn" onclick="clearChat()" title="Clear chat">
+            <i class="fas fa-trash-can"></i>
+          </button>
         </div>
       </div>
 
-      <!-- Typing Indicator -->
-      <div id="typing-indicator" style="display:none;">
-        <img src="avatar.png" alt="Bot" class="avatar">
-        <span>PersonaShield is typing...</span>
+      <!-- ===== RIGHT STATS PANEL ===== -->
+      <div class="stats-panel">
+
+        <!-- Live Risk Gauge -->
+        <div class="glass-card">
+          <div class="panel-title">Live Risk Level</div>
+          <div class="live-gauge">
+            <div class="gauge-wrap">
+              <svg class="gauge-svg" viewBox="0 0 120 120">
+                <circle class="gauge-bg"  cx="60" cy="60" r="48" stroke-dasharray="226 226" stroke-dashoffset="56"/>
+                <circle class="gauge-fill" id="gauge-arc" cx="60" cy="60" r="48"
+                        stroke="#10b981"
+                        stroke-dasharray="226 226"
+                        stroke-dashoffset="226"/>
+                <text class="gauge-number" id="gauge-num" x="60" y="57">0</text>
+                <text class="gauge-sub"   x="60" y="72">/10</text>
+              </svg>
+            </div>
+            <div class="gauge-status safe" id="gauge-status">✓ Safe</div>
+          </div>
+        </div>
+
+        <!-- Session Stats -->
+        <div class="glass-card">
+          <div class="panel-title">Session Stats</div>
+          <div style="display:flex;flex-direction:column;gap:0.5rem;padding:0 1.25rem 1.25rem;">
+            <div class="stat-card-row">
+              <div>
+                <div class="stat-number" id="stat-total">0</div>
+                <div class="stat-label">Messages Analyzed</div>
+              </div>
+              <div class="stat-icon blue"><i class="fas fa-message"></i></div>
+            </div>
+            <div class="stat-card-row" style="margin-top:0.5rem;">
+              <div>
+                <div class="stat-number" id="stat-threats" style="color:var(--high-color);">0</div>
+                <div class="stat-label">Threats Detected</div>
+              </div>
+              <div class="stat-icon red"><i class="fas fa-triangle-exclamation"></i></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="glass-card">
+          <div class="panel-title">Recent Activity</div>
+          <div class="recent-threats" id="recent-list">
+            <div style="font-size:0.78rem;color:var(--text-muted);padding:0.5rem 0;">
+              No activity yet. Start analyzing messages!
+            </div>
+          </div>
+        </div>
+
       </div>
+    </div><!-- /page-body -->
 
-      <!-- Quick Replies -->
-      <div id="quick-replies">
-        <button onclick="quickReply('What can you do?')">What can you do?</button>
-        <button onclick="quickReply('Tell me about privacy')">Tell me about privacy</button>
-        <button onclick="quickReply('Help!')">Help!</button>
-      </div>
+  </div><!-- /main-content -->
+</div><!-- /app-shell -->
 
-      <!-- System Response Box -->
-      <div id="system-response" style="
-        margin-top: 12px;
-        padding: 10px 16px;
-        background-color: #222;
-        border-left: 4px solid #66bfff;
-        border-radius: 4px;
-        font-size: 0.95rem;
-        color: #ccc;
-      "></div>
-
-      <!-- Input Section -->
-      <div id="input-area">
-        <img src="avatar.png" alt="You" class="avatar user-avatar">
-        <input type="text" id="message-input" placeholder="Type a message..." onkeydown="if(event.key==='Enter'){sendMessage();}">
-        <button onclick="sendMessage()">Send</button>
-        <button onclick="clearChat()" title="Clear chat">🗑️</button>
-      </div>
-
-      <!-- Alert Panel -->
-      <div id="alert-panel"></div>
-    </main>
+<!-- Alert Toast -->
+<div id="alert-panel">
+  <div class="alert-inner safe" id="alert-inner">
+    <span class="alert-icon" id="alert-icon">✓</span>
+    <div>
+      <div class="alert-text" id="alert-text">Message is safe</div>
+      <div class="alert-sub"  id="alert-sub">No threats detected</div>
+    </div>
   </div>
+</div>
 
-  <!-- View Dashboard Button -->
-  <div style="text-align: center; margin-top: 20px;">
-    <a href="dashboard.html" style="
-      padding: 10px 18px;
-      background-color: #f4f4f4;
-      color: #333;
-      text-decoration: none;
-      border-radius: 6px;
-      font-weight: bold;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    ">
-      📊 View Threat Logs
-    </a>
-  </div>
-
-  <!-- Footer -->
-  <footer style="
-    background: #1f1f1f;
-    color: #ccc;
-    text-align: center;
-    padding: 20px 0;
-    font-size: 0.9rem;
-    margin-top: 50px;">
-    <p>&copy; 2025 PersonaShield. All rights reserved.</p>
-    <p>Made with ❤️ by <span style="color:#00ffaa;">Arunima</span></p>
-  </footer>
-
-  <!-- Quick Reply Script -->
- <script>
-function quickReply(type) {
-  let responseText = "";
-
-  if (type === "What can you do?") {
-    responseText = `
-      🛡️ <strong>What can PersonaShield do?</strong><br>
-      - Detect social engineering threats<br>
-      - Score risky messages in real-time<br>
-      - Show <em>why</em> something was flagged<br>
-      - Let users give feedback for accuracy<br>
-      - Visualize patterns in phishing & manipulation
-    `;
-  } else if (type === "Tell me about privacy") {
-    responseText = `
-      🔐 <strong>Privacy First:</strong><br>
-      PersonaShield doesn’t store personal chats. Feedback logs are anonymized and used solely for system insights. Learn more at: <a href="https://privacy.microsoft.com/en-us/privacystatement" target="_blank" style="color: #66bfff;">Privacy Policy</a>
-    `;
-  } else if (type === "Help!") {
-    responseText = `
-      💬 <strong>Need help?</strong><br>
-      Try typing a message like:<br>
-      - "Reset my login credentials"<br>
-      - "Download attached document"<br>
-      PersonaShield will analyze the threat level and explain it instantly.
-    `;
-  }
-
-  const box = document.getElementById("system-response");
-  box.innerHTML = responseText;
-  box.classList.add("show");
-}
-</script>
-
-
-  <!-- App Logic -->
-  <script src="app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>

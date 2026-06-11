@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PersonaShield — Bulk Text Scanner</title>
+  <meta name="description" content="Paste emails, messages or documents and let AI analyze every sentence for threats.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ======= SIDEBAR ======= -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="avatar.png" alt="PersonaShield" class="brand-logo">
+      <div>
+        <div class="brand-name">PersonaShield</div>
+        <div class="brand-tagline">AI Security</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">Main</span>
+      <a href="/" class="nav-item"><i class="fas fa-comment-shield"></i> Chat Analyzer</a>
+      <a href="/dashboard" class="nav-item"><i class="fas fa-chart-line"></i> Dashboard</a>
+      <a href="/scanner" class="nav-item active"><i class="fas fa-search-plus"></i> Bulk Scanner</a>
+      <span class="nav-section-label">Info</span>
+      <a href="/" class="nav-item"><i class="fas fa-shield-halved"></i> About</a>
+    </nav>
+    <div class="sidebar-footer">
+      <p>Made with ❤️ by <span>Arunima</span></p>
+      <p style="margin-top:4px;">© 2025 PersonaShield</p>
+    </div>
+  </aside>
+
+  <!-- ======= MAIN CONTENT ======= -->
+  <div class="main-content">
+
+    <header class="top-header">
+      <div class="page-title">
+        <i class="fas fa-search-plus" style="color:var(--accent-blue);margin-right:0.5rem;"></i>
+        <span>Bulk Text Scanner</span>
+      </div>
+      <div class="header-status">
+        <div class="status-dot"></div>
+        AI System Online
+      </div>
+    </header>
+
+    <div class="scanner-body">
+
+      <!-- Input Card -->
+      <div class="glass-card scanner-card">
+        <div class="scanner-header">
+          <h2>Paste Text to Analyze</h2>
+          <p>Paste an email, chat log, SMS, or any message — AI will analyze every sentence for threats.</p>
+        </div>
+
+        <textarea id="scan-input"
+          placeholder="Paste your text here... e.g.&#10;&#10;Dear user, your account has been suspended due to suspicious activity. &#10;Please click the link below immediately to verify your identity.&#10;Failure to respond within 24 hours will result in permanent account closure.&#10;Reset via: http://secure-login.verify-account.xyz/reset"></textarea>
+
+        <div class="scan-actions">
+          <button class="scan-btn btn-primary" onclick="runScan()" id="scan-btn">
+            <i class="fas fa-magnifying-glass"></i> Scan for Threats
+          </button>
+          <button class="scan-btn btn-secondary" onclick="clearScan()">
+            <i class="fas fa-trash-can"></i> Clear
+          </button>
+          <button class="scan-btn btn-secondary" onclick="loadSample()">
+            <i class="fas fa-fish"></i> Load Sample
+          </button>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div id="scan-results">
+
+        <!-- Summary Banner -->
+        <div class="glass-card" style="padding:1.5rem;">
+          <div class="results-summary" style="margin-bottom:0;padding:0;border:none;background:none;">
+            <div style="text-align:center;">
+              <div style="font-size:2.5rem;font-weight:800;color:var(--text-primary);" id="res-overall">0</div>
+              <div style="font-size:0.78rem;color:var(--text-muted);">Overall Risk</div>
+            </div>
+            <div style="flex:1;border-left:1px solid var(--border);padding-left:1.5rem;">
+              <div style="display:flex;flex-wrap:wrap;gap:1.5rem;">
+                <div>
+                  <div style="font-size:1.6rem;font-weight:700;" id="res-sentences">—</div>
+                  <div style="font-size:0.78rem;color:var(--text-muted);">Sentences Scanned</div>
+                </div>
+                <div>
+                  <div style="font-size:1.6rem;font-weight:700;color:var(--high-color);" id="res-threats">—</div>
+                  <div style="font-size:0.78rem;color:var(--text-muted);">Threats Found</div>
+                </div>
+                <div>
+                  <div id="res-verdict" style="font-size:1rem;font-weight:700;padding:0.5rem 1.25rem;border-radius:99px;background:rgba(16,185,129,0.15);color:var(--safe-color);">✓ Safe</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Highlighted Text -->
+        <div class="glass-card" style="padding:1.5rem;" id="highlight-card">
+          <h3 style="font-size:0.85rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:1rem;">
+            <i class="fas fa-highlighter" style="color:var(--accent-blue);margin-right:0.4rem;"></i>
+            Annotated Text
+          </h3>
+          <div class="highlighted-text" id="highlighted-text"></div>
+        </div>
+
+        <!-- Finding Details -->
+        <div class="glass-card" style="padding:1.5rem;" id="findings-card">
+          <h3 style="font-size:0.85rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:1rem;">
+            <i class="fas fa-list-check" style="color:var(--accent-blue);margin-right:0.4rem;"></i>
+            Threat Findings
+          </h3>
+          <div class="sentence-findings" id="sentence-findings"></div>
+        </div>
+
+      </div><!-- /scan-results -->
+
+    </div><!-- /scanner-body -->
+  </div><!-- /main-content -->
+</div><!-- /app-shell -->
+
+<script src="scanner.js"></script>
+</body>
+</html>
