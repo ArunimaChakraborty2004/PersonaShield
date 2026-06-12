@@ -1,0 +1,234 @@
+/* ============================================================
+   PersonaShield — URL Scanner Page Styles (appended to style.css)
+   ============================================================ */
+
+/* ── URL Input Row ──────────────────────────────────────────── */
+.url-input-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.url-input-wrap {
+  flex: 1;
+  position: relative;
+}
+
+.url-input-icon {
+  position: absolute;
+  left: 1.1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 1rem;
+  pointer-events: none;
+}
+
+.url-input-field {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 0.9rem 1.25rem 0.9rem 2.75rem;
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  outline: none;
+  transition: var(--transition);
+}
+
+.url-input-field:focus {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+}
+
+.url-input-field::placeholder { color: var(--text-muted); }
+
+/* ── Result Banner ──────────────────────────────────────────── */
+.url-result-banner {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+/* SVG Score Ring */
+.url-score-ring {
+  width: 120px;
+  height: 120px;
+  flex-shrink: 0;
+}
+
+.url-ring-bg {
+  fill: none;
+  stroke: rgba(255,255,255,0.06);
+  stroke-width: 10;
+}
+
+.url-ring-fill {
+  fill: none;
+  stroke-width: 10;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: center;
+  transition: stroke-dashoffset 1s cubic-bezier(0.4,0,0.2,1), stroke 0.5s;
+}
+
+.url-ring-num {
+  font-size: 1.9rem;
+  font-weight: 800;
+  fill: var(--text-primary);
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.url-ring-sub {
+  font-size: 0.65rem;
+  fill: var(--text-muted);
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.url-result-score-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.url-score-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+}
+
+.url-result-meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  overflow: hidden;
+}
+
+.url-result-link {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  word-break: break-all;
+  line-height: 1.4;
+}
+
+.url-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  border-radius: 99px;
+  font-size: 1rem;
+  font-weight: 700;
+  width: fit-content;
+}
+
+.url-status-badge.safe {
+  background: rgba(16,185,129,0.15);
+  color: var(--safe-color);
+  border: 1px solid rgba(16,185,129,0.3);
+}
+
+.url-status-badge.suspicious {
+  background: rgba(245,158,11,0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245,158,11,0.3);
+}
+
+.url-status-badge.malicious {
+  background: rgba(239,68,68,0.15);
+  color: var(--high-color);
+  border: 1px solid rgba(239,68,68,0.4);
+}
+
+/* ── Details Grid ───────────────────────────────────────────── */
+.url-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.url-detail-card {
+  padding: 1.5rem;
+}
+
+.url-detail-full {
+  grid-column: 1 / -1;
+}
+
+.url-detail-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  margin-bottom: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.url-detail-title i { color: var(--accent-blue); }
+
+.url-detail-body {
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  line-height: 1.7;
+}
+
+/* ── Sources List ───────────────────────────────────────────── */
+.url-sources-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.url-sources-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 1rem;
+  background: rgba(239,68,68,0.06);
+  border: 1px solid rgba(239,68,68,0.2);
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+.url-sources-list li::before {
+  content: '⚠';
+  color: #f59e0b;
+  flex-shrink: 0;
+  font-size: 0.9rem;
+}
+
+.url-sources-list li.safe {
+  background: rgba(16,185,129,0.06);
+  border-color: rgba(16,185,129,0.2);
+}
+
+.url-sources-list li.safe::before {
+  content: '✓';
+  color: var(--safe-color);
+}
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 700px) {
+  .url-input-row    { flex-direction: column; }
+  .url-result-banner{ flex-direction: column; text-align: center; }
+  .url-details-grid { grid-template-columns: 1fr; }
+  .url-detail-full  { grid-column: 1; }
+}

@@ -14,7 +14,7 @@ let donutChart, lineChart;
 document.addEventListener('DOMContentLoaded', loadAll);
 
 async function loadAll() {
-  await Promise.all([loadSummary(), loadLogs(), loadTimeline()]);
+  await Promise.all([loadSummary(), loadLogs(), loadTimeline(), loadUrlSummary(), loadUrlLogs()]);
 }
 
 // ─── Summary Cards ───────────────────────────────────────────────
@@ -409,3 +409,44 @@ window.searchLogs    = searchLogs;
 window.submitFeedback = submitFeedback;
 window.exportCSV     = exportCSV;
 window.goPage        = goPage;
+
+// ─── URL Scanner Dashboard Logic ─────────────────────────────────
+async function loadUrlSummary() {
+  try {
+    const res = await fetch('/api/url_summary');
+    const data = await res.json();
+    animateCount('url-total', data.total || 0);
+    animateCount('url-threats', data.malicious || 0);
+    animateCount('url-safe', data.safe || 0);
+  } catch(e) { console.error('URL Summary error', e); }
+}
+
+async function loadUrlLogs() {
+  try {
+    const res = await fetch('/api/url_logs?limit=5');
+    const data = await res.json();
+    const tbody = document.getElementById('url-log-entries');
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:2rem;">No URL scans found.</td></tr>';
+      return;
+    }
+    
+    tbody.innerHTML = data.map(entry => {
+      const ts = entry.timestamp ? new Date(entry.timestamp).toLocaleString() : '—';
+      let statusColor = 'var(--safe-color)';
+      if (entry.status === 'Malicious') statusColor = 'var(--high-color)';
+      else if (entry.status === 'Suspicious') statusColor = '#f59e0b';
+      
+      return `
+        <tr>
+          <td style="word-break:break-all;" title="${escHtml(entry.url)}">${escHtml(entry.url)}</td>
+          <td style="color:${statusColor};font-weight:bold;">${entry.risk_score}/10</td>
+          <td><span style="color:${statusColor};">${escHtml(entry.status)}</span></td>
+          <td style="color:var(--text-muted);font-size:0.8rem;">${ts}</td>
+        </tr>
+      `;
+    }).join('');
+  } catch(e) {
+    console.error('URL Logs error', e);
+  }
+}

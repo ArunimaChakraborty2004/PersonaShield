@@ -11,17 +11,18 @@ load_dotenv("En.env")
 MONGO_URI = os.getenv("MONGO_URI")
 
 if not MONGO_URI:
-    print("❌ CRITICAL: MONGO_URI environment variable is missing. Please check your .env file.")
+    print("CRITICAL: MONGO_URI environment variable is missing. Please check your En.env file.")
     sys.exit(1)
 
 try:
     client = MongoClient(MONGO_URI)
     db = client["persona_shield"]
     messages = db["logs"]
+    url_logs = db["url_logs"]
     client.admin.command('ping')
-    print("✅ Connected to MongoDB Atlas")
+    print("Connected to MongoDB Atlas successfully.")
 except Exception as e:
-    print(f"❌ Database connection failed: {e}")
+    print(f"Database connection failed: {e}")
     sys.exit(1)
 def save_message(text, score, threat_type, matched_keywords=None,
                  matched_phrases=None, severity=None, explanation=None,
@@ -41,3 +42,14 @@ def save_message(text, score, threat_type, matched_keywords=None,
 
 def update_feedback(entry_id, feedback_value):
     messages.update_one({"_id": entry_id}, {"$set": {"feedback": feedback_value}})
+
+def save_url_scan(url, risk_score, status, explanation, recommendation, sources=None):
+    url_logs.insert_one({
+        "url": url,
+        "risk_score": risk_score,
+        "status": status,
+        "explanation": explanation,
+        "recommendation": recommendation,
+        "sources": sources or [],
+        "timestamp": datetime.utcnow()
+    })

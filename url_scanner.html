@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PersonaShield — URL Scanner</title>
+  <meta name="description" content="Instantly scan any URL for phishing, malware, brand impersonation, and suspicious patterns using AI-powered analysis.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="url_scanner_styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ======= SIDEBAR ======= -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="avatar.png" alt="PersonaShield" class="brand-logo">
+      <div>
+        <div class="brand-name">PersonaShield</div>
+        <div class="brand-tagline">AI Security</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">Main</span>
+      <a href="/"           class="nav-item"><i class="fas fa-comment-shield"></i> Chat Analyzer</a>
+      <a href="/dashboard"  class="nav-item"><i class="fas fa-chart-line"></i> Dashboard</a>
+      <a href="/scanner"    class="nav-item"><i class="fas fa-search-plus"></i> Bulk Scanner</a>
+      <a href="/url_scanner"class="nav-item active"><i class="fas fa-link"></i> URL Scanner</a>
+      <span class="nav-section-label">Info</span>
+      <a href="/"           class="nav-item"><i class="fas fa-shield-halved"></i> About</a>
+    </nav>
+    <div class="sidebar-footer">
+      <p>Made with ❤️ by <span>Arunima</span></p>
+      <p style="margin-top:4px;">© 2025 PersonaShield</p>
+    </div>
+  </aside>
+
+  <!-- ======= MAIN CONTENT ======= -->
+  <div class="main-content">
+
+    <!-- Header -->
+    <header class="top-header">
+      <div class="page-title">
+        <i class="fas fa-link" style="color:var(--accent-blue);margin-right:0.5rem;"></i>
+        <span>URL Scanner</span>
+      </div>
+      <div class="header-status">
+        <div class="status-dot"></div>
+        AI System Online
+      </div>
+    </header>
+
+    <!-- Body -->
+    <div class="scanner-body">
+
+      <!-- ── Input Card ──────────────────────────────── -->
+      <div class="glass-card scanner-card">
+        <div class="scanner-header">
+          <h2><i class="fas fa-shield-virus" style="color:var(--accent-blue);margin-right:0.6rem;"></i>Scan a URL for Threats</h2>
+          <p>Paste any link below. PersonaShield will inspect the domain, path, TLD, and structure for phishing, brand impersonation, and malware indicators.</p>
+        </div>
+
+        <!-- URL input row -->
+        <div class="url-input-row">
+          <div class="url-input-wrap">
+            <i class="fas fa-globe url-input-icon"></i>
+            <input
+              type="text"
+              id="url-input"
+              class="url-input-field"
+              placeholder="https://example.com/login"
+              autocomplete="off"
+              spellcheck="false"
+              onkeydown="if(event.key==='Enter'){scanUrl();}"
+            >
+          </div>
+          <button class="scan-btn btn-primary" onclick="scanUrl()" id="scan-btn">
+            <i class="fas fa-magnifying-glass-chart"></i> Scan URL
+          </button>
+        </div>
+
+        <div class="scan-actions">
+          <button class="scan-btn btn-secondary" onclick="clearScan()">
+            <i class="fas fa-trash-can"></i> Clear
+          </button>
+          <button class="scan-btn btn-secondary" onclick="loadSample('phishing')">
+            <i class="fas fa-fish"></i> Phishing Sample
+          </button>
+          <button class="scan-btn btn-secondary" onclick="loadSample('safe')">
+            <i class="fas fa-check-circle"></i> Safe Sample
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Loading Indicator ───────────────────────── -->
+      <div id="url-loading" class="glass-card" style="display:none;padding:2.5rem;text-align:center;">
+        <div style="text-align:center;padding:2.5rem;">
+          <div class="url-spinner">
+            <i class="fas fa-circle-notch fa-spin" style="font-size:2.5rem;color:var(--accent-blue);"></i>
+          </div>
+          <p style="margin-top:1rem;color:var(--text-muted);font-size:0.95rem;">Analyzing URL structure, domain reputation, and threat patterns…</p>
+        </div>
+      </div>
+
+      <!-- ── Results Section ────────────────────────── -->
+      <div id="url-results" style="display:none;">
+
+        <!-- Score Banner -->
+        <div class="glass-card url-result-banner">
+          <div class="url-result-score-wrap">
+            <!-- Circular SVG Score -->
+            <svg class="url-score-ring" viewBox="0 0 120 120">
+              <circle class="url-ring-bg"   cx="60" cy="60" r="50"/>
+              <circle class="url-ring-fill" cx="60" cy="60" r="50"
+                      id="url-ring-arc"
+                      stroke-dasharray="314 314"
+                      stroke-dashoffset="314"/>
+              <text class="url-ring-num" id="url-ring-num" x="60" y="56">0</text>
+              <text class="url-ring-sub" x="60" y="72">/10</text>
+            </svg>
+            <div class="url-score-label">Risk Score</div>
+          </div>
+
+          <div class="url-result-meta">
+            <div class="url-result-link" id="res-url">https://…</div>
+            <div id="res-status-badge" class="url-status-badge">Status</div>
+          </div>
+        </div>
+
+        <!-- Details Grid -->
+        <div class="url-details-grid">
+
+          <!-- Explanation -->
+          <div class="glass-card url-detail-card">
+            <div class="url-detail-title">
+              <i class="fas fa-circle-info"></i> Explanation
+            </div>
+            <p id="res-explanation" class="url-detail-body">—</p>
+          </div>
+
+          <!-- Recommendation -->
+          <div class="glass-card url-detail-card">
+            <div class="url-detail-title">
+              <i class="fas fa-circle-check"></i> Recommendation
+            </div>
+            <p id="res-recommendation" class="url-detail-body">—</p>
+          </div>
+
+          <!-- Detection Sources — full width -->
+          <div class="glass-card url-detail-card url-detail-full">
+            <div class="url-detail-title">
+              <i class="fas fa-magnifying-glass-chart"></i> Detection Sources
+            </div>
+            <ul id="res-sources" class="url-sources-list"></ul>
+          </div>
+
+        </div><!-- /url-details-grid -->
+
+        <!-- Scan another -->
+        <div style="text-align:center;margin-top:1.5rem;">
+          <button class="scan-btn btn-secondary" onclick="clearScan()">
+            <i class="fas fa-arrow-left"></i> Scan another URL
+          </button>
+        </div>
+
+      </div><!-- /url-results -->
+
+    </div><!-- /scanner-body -->
+  </div><!-- /main-content -->
+</div><!-- /app-shell -->
+
+<script src="url_scanner.js"></script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-En.env
-.env
+git En.env
 __pycache__/
 *.pyc
+En.env

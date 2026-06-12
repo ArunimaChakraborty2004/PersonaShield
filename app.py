@@ -4,7 +4,8 @@ load_dotenv("En.env")
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from ai_analyzer import analyze_message
-from db import save_message, update_feedback, messages
+from url_scanner import scan_url
+from db import save_message, update_feedback, messages, save_url_scan, url_logs
 from bson import ObjectId
 from datetime import datetime, timedelta
 
@@ -23,6 +24,10 @@ def dashboard():
 @app.route('/scanner')
 def scanner():
     return send_from_directory('.', 'scanner.html')
+
+@app.route('/url_scanner')
+def url_scanner():
+    return send_from_directory('.', 'url_scanner.html')
 
 @app.route('/<path:filename>')
 def static_files(filename):
@@ -199,6 +204,56 @@ def test_trigger():
     result = analyze_message(message)
     return jsonify(result)
 
+
+# ─── URL Scanner Endpoints ──────────────────────────────────────────
+@app.route('/api/scan_url', methods=['POST'])
+def api_scan_url():
+    data = request.get_json()
+    url = data.get('url', '')
+    if not url.strip():
+        return jsonify({"error": "No URL provided"}), 400
+        
+    result = scan_url(url)
+    save_url_scan(
+        url=result["url"],
+        risk_score=result["risk_score"],
+        status=result["status"],
+        explanation=result["explanation"],
+        recommendation=result["recommendation"],
+        sources=result.get("sources", [])
+    )
+    return jsonify(result)
+
+@app.route('/api/url_summary')
+def url_summary():
+    try:
+        total = url_logs.count_documents({})
+        threats = url_logs.count_documents({"status": "Malicious"})
+        suspicious = url_logs.count_documents({"status": "Suspicious"})
+        safe = url_logs.count_documents({"status": "Safe"})
+        return jsonify({
+            "total": total,
+            "malicious": threats,
+            "suspicious": suspicious,
+            "threats": threats + suspicious,
+            "safe": safe
+        })
+    except Exception as e:
+        print("URL Summary error:", e)
+        return jsonify({"total": 0, "malicious": 0, "suspicious": 0, "threats": 0, "safe": 0})
+
+@app.route('/api/url_logs')
+def get_url_logs():
+    try:
+        limit = int(request.args.get('limit', 10))
+        data = list(url_logs.find({}, {"_id": 0}).sort("timestamp", -1).limit(limit))
+        for entry in data:
+            if "timestamp" in entry and entry["timestamp"]:
+                entry["timestamp"] = entry["timestamp"].isoformat()
+        return jsonify(data)
+    except Exception as e:
+        print("URL Logs error:", e)
+        return jsonify([]), 500
 
 # ─── Launch ───────────────────────────────────────────────────────
 if __name__ == '__main__':
