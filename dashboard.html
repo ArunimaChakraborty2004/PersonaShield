@@ -95,9 +95,26 @@
           <div class="stat-lbl">Malicious URLs</div>
         </div>
         <div class="glass-card stat-card-big" style="flex:1;">
+          <div class="stat-icon-big" style="color:#f59e0b; background:rgba(245,158,11,0.1);"><i class="fas fa-exclamation-triangle"></i></div>
+          <div class="stat-num" id="url-suspicious" style="color:#f59e0b;">—</div>
+          <div class="stat-lbl">Suspicious URLs</div>
+        </div>
+        <div class="glass-card stat-card-big" style="flex:1;">
           <div class="stat-icon-big green"><i class="fas fa-shield-halved"></i></div>
           <div class="stat-num" id="url-safe" style="color:var(--safe-color);">—</div>
           <div class="stat-lbl">Safe URLs</div>
+        </div>
+      </div>
+      
+      <!-- ── URL Charts Row ── -->
+      <div class="charts-row" style="margin-top: 1.5rem;">
+        <div class="glass-card chart-card">
+          <h3><i class="fas fa-chart-pie" style="color:var(--accent-blue);margin-right:0.4rem;"></i>URL Threat Distribution</h3>
+          <canvas id="urlDonutChart" height="220"></canvas>
+        </div>
+        <div class="glass-card chart-card">
+          <h3><i class="fas fa-chart-area" style="color:var(--accent-cyan);margin-right:0.4rem;"></i>URL Risk Trends (7 days)</h3>
+          <canvas id="urlLineChart" height="220"></canvas>
         </div>
       </div>
 

@@ -220,7 +220,11 @@ def api_scan_url():
         status=result["status"],
         explanation=result["explanation"],
         recommendation=result["recommendation"],
-        sources=result.get("sources", [])
+        sources=result.get("sources", []),
+        confidence=result.get("confidence", 0),
+        threat_type=result.get("threat_type", "Unknown"),
+        domain_age=result.get("domain_age", None),
+        ai_powered=result.get("ai_powered", False)
     )
     return jsonify(result)
 
@@ -254,6 +258,55 @@ def get_url_logs():
     except Exception as e:
         print("URL Logs error:", e)
         return jsonify([]), 500
+
+@app.route('/api/url_stats')
+def get_url_stats():
+    try:
+        # Threat Distribution
+        dist_pipeline = [
+            {"$group": {"_id": "$threat_type", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}}
+        ]
+        threat_dist = list(url_logs.aggregate(dist_pipeline))
+        
+        # Risk Score Trends (last 7 days)
+        days = 7
+        trend_pipeline = [
+            {"$match": {"timestamp": {"$gte": datetime.utcnow() - timedelta(days=days)}}},
+            {"$group": {
+                "_id": {"$dateToString": {"format": "%Y-%m-%d", "date": "$timestamp"}},
+                "avg_risk": {"$avg": "$risk_score"},
+                "scans": {"$sum": 1}
+            }},
+            {"$sort": {"_id": 1}}
+        ]
+        risk_trends = list(url_logs.aggregate(trend_pipeline))
+        
+        # Top Suspicious Domains
+        domain_pipeline = [
+            {"$match": {"status": {"$in": ["Suspicious", "Malicious"]}}},
+            {"$group": {
+                "_id": "$url", 
+                "count": {"$sum": 1},
+                "avg_risk": {"$avg": "$risk_score"}
+            }},
+            {"$sort": {"count": -1}},
+            {"$limit": 5}
+        ]
+        top_domains = list(url_logs.aggregate(domain_pipeline))
+        
+        return jsonify({
+            "threat_distribution": threat_dist,
+            "risk_trends": risk_trends,
+            "top_domains": top_domains
+        })
+    except Exception as e:
+        print("URL Stats error:", e)
+        return jsonify({
+            "threat_distribution": [],
+            "risk_trends": [],
+            "top_domains": []
+        }), 500
 
 # ─── Launch ───────────────────────────────────────────────────────
 if __name__ == '__main__':

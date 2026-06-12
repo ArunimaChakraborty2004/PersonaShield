@@ -79,6 +79,18 @@ function displayResults(data) {
   document.getElementById('res-explanation').textContent    = data.explanation    || '—';
   document.getElementById('res-recommendation').textContent = data.recommendation || '—';
 
+  // ── Confidence, Threat Type, Domain Age, AI ──
+  document.getElementById('res-confidence').textContent = (data.confidence !== undefined) ? `${data.confidence}%` : '—';
+  document.getElementById('res-threat-type').textContent = data.threat_type || 'Unknown';
+  document.getElementById('res-domain-age').textContent = (data.domain_age !== undefined && data.domain_age !== null) ? data.domain_age : 'Unknown';
+  
+  const aiBadge = document.getElementById('res-ai-analysis');
+  if (data.ai_powered) {
+    aiBadge.innerHTML = '<span style="color:var(--accent-purple);font-weight:bold;"><i class="fas fa-check-circle"></i> AI Evaluated</span>';
+  } else {
+    aiBadge.innerHTML = '<span style="color:var(--text-muted);">Rule-based (No AI)</span>';
+  }
+
   // ── Detection Sources ──
   const ul = document.getElementById('res-sources');
   ul.innerHTML = '';

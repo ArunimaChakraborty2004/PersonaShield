@@ -14,7 +14,7 @@ let donutChart, lineChart;
 document.addEventListener('DOMContentLoaded', loadAll);
 
 async function loadAll() {
-  await Promise.all([loadSummary(), loadLogs(), loadTimeline(), loadUrlSummary(), loadUrlLogs()]);
+  await Promise.all([loadSummary(), loadLogs(), loadTimeline(), loadUrlSummary(), loadUrlLogs(), loadUrlStats()]);
 }
 
 // ─── Summary Cards ───────────────────────────────────────────────
@@ -417,6 +417,7 @@ async function loadUrlSummary() {
     const data = await res.json();
     animateCount('url-total', data.total || 0);
     animateCount('url-threats', data.malicious || 0);
+    animateCount('url-suspicious', data.suspicious || 0);
     animateCount('url-safe', data.safe || 0);
   } catch(e) { console.error('URL Summary error', e); }
 }
@@ -449,4 +450,73 @@ async function loadUrlLogs() {
   } catch(e) {
     console.error('URL Logs error', e);
   }
+}
+
+let urlDonutChart, urlLineChart;
+
+async function loadUrlStats() {
+  try {
+    const res = await fetch('/api/url_stats');
+    const data = await res.json();
+    
+    // URL Donut Chart
+    const distLabels = data.threat_distribution.map(d => d._id || 'Unknown');
+    const distCounts = data.threat_distribution.map(d => d.count);
+    const colors = ['#3b82f6','#ef4444','#f59e0b','#10b981','#8b5cf6','#06b6d4'];
+    
+    const ctxD = document.getElementById('urlDonutChart').getContext('2d');
+    if (urlDonutChart) urlDonutChart.destroy();
+    urlDonutChart = new Chart(ctxD, {
+      type: 'doughnut',
+      data: {
+        labels: distLabels,
+        datasets: [{
+          data: distCounts,
+          backgroundColor: colors.slice(0, distLabels.length),
+          borderColor: 'rgba(5,13,26,0.8)',
+          borderWidth: 3
+        }]
+      },
+      options: {
+        responsive: true,
+        cutout: '68%',
+        plugins: {
+          legend: { position: 'bottom', labels: { color: '#94a3b8', font: { family: 'Inter' } } }
+        }
+      }
+    });
+
+    // URL Line Chart
+    const trendLabels = data.risk_trends.map(d => {
+      const date = new Date(d._id);
+      return date.toLocaleDateString('en', { month: 'short', day: 'numeric' });
+    });
+    const avgRisks = data.risk_trends.map(d => d.avg_risk);
+
+    const ctxL = document.getElementById('urlLineChart').getContext('2d');
+    if (urlLineChart) urlLineChart.destroy();
+    urlLineChart = new Chart(ctxL, {
+      type: 'line',
+      data: {
+        labels: trendLabels,
+        datasets: [{
+          label: 'Avg Risk Score',
+          data: avgRisks,
+          borderColor: '#ef4444',
+          backgroundColor: 'rgba(239,68,68,0.1)',
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { min: 0, max: 10, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#64748b' } },
+          x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#64748b' } }
+        },
+        plugins: { legend: { labels: { color: '#94a3b8' } } }
+      }
+    });
+
+  } catch(e) { console.error('URL Stats error', e); }
 }
