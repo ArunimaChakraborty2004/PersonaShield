@@ -44,7 +44,13 @@ function scanUrl() {
 }
 
 // ─── Render results ───────────────────────────────────────────
+let currentScanId = null;
+
 function displayResults(data) {
+  currentScanId = data.scan_id || null;
+  const btn = document.getElementById('download-report-btn');
+  if(btn) btn.style.display = currentScanId ? 'inline-block' : 'none';
+
   // Show results section
   document.getElementById('url-results').style.display = 'block';
 
@@ -216,7 +222,14 @@ function loadSample(type) {
   document.getElementById('url-input').focus();
 }
 
+function downloadCurrentReport() {
+  if (currentScanId) {
+    window.open(`/api/report/${currentScanId}?type=url`, '_blank');
+  }
+}
+
 // ─── Expose globals for inline onclick handlers ────────────────
 window.scanUrl    = scanUrl;
 window.clearScan  = clearScan;
 window.loadSample = loadSample;
+window.downloadCurrentReport = downloadCurrentReport;

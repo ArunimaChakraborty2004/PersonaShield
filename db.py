@@ -27,8 +27,8 @@ except Exception as e:
     sys.exit(1)
 def save_message(text, score, threat_type, matched_keywords=None,
                  matched_phrases=None, severity=None, explanation=None,
-                 recommendation=None, ai_powered=False):
-    messages.insert_one({
+                 recommendation=None, ai_powered=False, confidence=0):
+    res = messages.insert_one({
         "text": text,
         "score": score,
         "threat_type": threat_type,
@@ -38,8 +38,10 @@ def save_message(text, score, threat_type, matched_keywords=None,
         "explanation": explanation or "",
         "recommendation": recommendation or "",
         "ai_powered": ai_powered,
+        "confidence": confidence,
         "timestamp": datetime.utcnow()
     })
+    return str(res.inserted_id)
 
 def update_feedback(entry_id, feedback_value):
     messages.update_one({"_id": entry_id}, {"$set": {"feedback": feedback_value}})
@@ -60,7 +62,7 @@ def update_url_intelligence(domain, risk_score, confidence):
     )
 
 def save_url_scan(url, risk_score, status, explanation, recommendation, sources=None, confidence=0, threat_type="Unknown", domain_age=None, ai_powered=False):
-    url_logs.insert_one({
+    res = url_logs.insert_one({
         "url": url,
         "risk_score": risk_score,
         "status": status,
@@ -73,3 +75,4 @@ def save_url_scan(url, risk_score, status, explanation, recommendation, sources=
         "ai_powered": ai_powered,
         "timestamp": datetime.utcnow()
     })
+    return str(res.inserted_id)

@@ -1,13 +1,14 @@
 from dotenv import load_dotenv
 load_dotenv("En.env")
 
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, send_file
 from flask_cors import CORS
 from ai_analyzer import analyze_message
 from url_scanner import scan_url
 from db import save_message, update_feedback, messages, save_url_scan, url_logs
 from bson import ObjectId
 from datetime import datetime, timedelta
+from report_generator import generate_pdf_report
 
 app = Flask(__name__)
 CORS(app)
@@ -50,7 +51,8 @@ def detect():
         severity=result.get("severity", "safe"),
         explanation=result.get("explanation", ""),
         recommendation=result.get("recommendation", ""),
-        ai_powered=result.get("ai_powered", False)
+        ai_powered=result.get("ai_powered", False),
+        confidence=result.get("confidence", 0)
     )
     return jsonify(result)
 
@@ -78,7 +80,8 @@ def bulk_scan():
                 "score": result["score"],
                 "type": result["threat_type"],
                 "severity": result.get("severity", "safe"),
-                "explanation": result.get("explanation", "")
+                "explanation": result.get("explanation", ""),
+                "confidence": result.get("confidence", 0)
             })
             overall_score = max(overall_score, result["score"])
 
@@ -101,7 +104,7 @@ def get_logs():
             "timestamp": 1, "feedback": 1,
             "matched_keywords": 1, "matched_phrases": 1,
             "severity": 1, "explanation": 1, "recommendation": 1,
-            "ai_powered": 1
+            "ai_powered": 1, "confidence": 1
         }).sort("timestamp", -1).skip(skip).limit(limit))
         for entry in data:
             entry["_id"] = str(entry["_id"])
@@ -157,7 +160,8 @@ def timeline():
             {"$group": {
                 "_id": {"$dateToString": {"format": "%Y-%m-%d", "date": "$timestamp"}},
                 "count": {"$sum": 1},
-                "threats": {"$sum": {"$cond": [{"$gt": ["$score", 4]}, 1, 0]}}
+                "threats": {"$sum": {"$cond": [{"$gt": ["$score", 4]}, 1, 0]}},
+                "avg_score": {"$avg": "$score"}
             }},
             {"$sort": {"_id": 1}}
         ]
@@ -177,7 +181,7 @@ def search_logs():
         data = list(messages.find(query, {
             "text": 1, "score": 1, "threat_type": 1, "timestamp": 1,
             "feedback": 1, "matched_keywords": 1, "matched_phrases": 1,
-            "severity": 1, "explanation": 1, "ai_powered": 1
+            "severity": 1, "explanation": 1, "ai_powered": 1, "confidence": 1
         }).sort("timestamp", -1).limit(100))
         for entry in data:
             entry["_id"] = str(entry["_id"])
@@ -214,7 +218,7 @@ def api_scan_url():
         return jsonify({"error": "No URL provided"}), 400
         
     result = scan_url(url)
-    save_url_scan(
+    scan_id = save_url_scan(
         url=result["url"],
         risk_score=result["risk_score"],
         status=result["status"],
@@ -226,6 +230,7 @@ def api_scan_url():
         domain_age=result.get("domain_age", None),
         ai_powered=result.get("ai_powered", False)
     )
+    result["scan_id"] = scan_id
     return jsonify(result)
 
 @app.route('/api/url_summary')
@@ -250,8 +255,9 @@ def url_summary():
 def get_url_logs():
     try:
         limit = int(request.args.get('limit', 10))
-        data = list(url_logs.find({}, {"_id": 0}).sort("timestamp", -1).limit(limit))
+        data = list(url_logs.find({}).sort("timestamp", -1).limit(limit))
         for entry in data:
+            entry["_id"] = str(entry["_id"])
             if "timestamp" in entry and entry["timestamp"]:
                 entry["timestamp"] = entry["timestamp"].isoformat()
         return jsonify(data)
@@ -307,6 +313,39 @@ def get_url_stats():
             "risk_trends": [],
             "top_domains": []
         }), 500
+
+# ─── Generate PDF Report ──────────────────────────────────────────
+@app.route('/api/report/<scan_id>')
+def generate_report(scan_id):
+    scan_type = request.args.get('type', 'message')
+    try:
+        if scan_type == 'url':
+            scan_data = url_logs.find_one({"_id": ObjectId(scan_id)})
+        else:
+            scan_data = messages.find_one({"_id": ObjectId(scan_id)})
+            
+        if not scan_data:
+            return jsonify({"error": "Scan not found"}), 404
+            
+        pdf_buffer = generate_pdf_report(scan_data, scan_type)
+        
+        timestamp = scan_data.get("timestamp", datetime.utcnow())
+        if hasattr(timestamp, "isoformat"):
+            date_str = timestamp.strftime("%Y-%m-%d")
+        else:
+            date_str = str(timestamp)[:10]
+            
+        filename = f"Threat_Report_{date_str}.pdf"
+        
+        return send_file(
+            pdf_buffer,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=filename
+        )
+    except Exception as e:
+        print("Report generation error:", e)
+        return jsonify({"error": str(e)}), 500
 
 # ─── Launch ───────────────────────────────────────────────────────
 if __name__ == '__main__':

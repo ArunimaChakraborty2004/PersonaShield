@@ -311,7 +311,18 @@ def scan_url(url: str) -> dict:
     # Check intelligence cache
     intel = get_url_intelligence(domain)
     if intel and intel.get("times_seen", 0) > 5:
-        confidence = min(confidence + 5, 100)
+        confidence += 5
+
+    # Enforce strict confidence ranges
+    if is_openphish_url(url):
+        confidence = 100
+    else:
+        if final_score >= 7:
+            confidence = max(85, min(confidence, 99))
+        elif final_score >= 4:
+            confidence = max(70, min(confidence, 90))
+        else:
+            confidence = max(60, min(confidence, 85))
 
     # Update intelligence cache
     update_url_intelligence(domain, final_score, confidence)

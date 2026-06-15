@@ -161,6 +161,7 @@ function renderFindings(findings) {
           <div style="display:flex;align-items:center;gap:0.5rem;">
             <span style="font-size:0.9rem;">${icon}</span>
             <span class="threat-badge ${severityBadge(sev)}" style="font-size:0.72rem;">${escHtml(f.type || 'Unknown')}</span>
+            <span style="font-size:0.75rem;font-weight:600;color:var(--text-muted);">Conf: ${f.confidence || 0}%</span>
           </div>
           <span style="font-size:0.8rem;font-weight:700;color:${color};">Score: ${f.score}/10</span>
         </div>

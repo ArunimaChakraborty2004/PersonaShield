@@ -14,7 +14,15 @@ let donutChart, lineChart;
 document.addEventListener('DOMContentLoaded', loadAll);
 
 async function loadAll() {
-  await Promise.all([loadSummary(), loadLogs(), loadTimeline(), loadUrlSummary(), loadUrlLogs(), loadUrlStats()]);
+  await Promise.all([
+    loadSummary(),
+    loadLogs(),
+    loadTimeline(),
+    loadAvgScoreChart(),
+    loadUrlSummary(),
+    loadUrlLogs(),
+    loadUrlStats()
+  ]);
 }
 
 // ─── Summary Cards ───────────────────────────────────────────────
@@ -100,7 +108,7 @@ async function loadStats() {
   } catch(e) { console.error('Stats error', e); }
 }
 
-// ─── Line Chart ───────────────────────────────────────────────────
+// ─── Timeline Line Chart (Total Scans + Threats) ─────────────────
 async function loadTimeline() {
   try {
     const res  = await fetch('/api/timeline?days=7');
@@ -119,11 +127,11 @@ async function loadTimeline() {
     lineChart = new Chart(ctx, {
       type: 'line',
       data: {
-        labels,
+        labels: labels.length ? labels : ['No data'],
         datasets: [
           {
             label: 'Total Scans',
-            data: total,
+            data: total.length ? total : [0],
             borderColor: '#3b82f6',
             backgroundColor: 'rgba(59,130,246,0.08)',
             pointBackgroundColor: '#3b82f6',
@@ -134,7 +142,7 @@ async function loadTimeline() {
           },
           {
             label: 'Threats',
-            data: threats,
+            data: threats.length ? threats : [0],
             borderColor: '#ef4444',
             backgroundColor: 'rgba(239,68,68,0.07)',
             pointBackgroundColor: '#ef4444',
@@ -179,12 +187,90 @@ async function loadTimeline() {
     });
   } catch(e) {
     console.error('Timeline error', e);
-    // Show empty chart
     const ctx = document.getElementById('lineChart').getContext('2d');
     if (lineChart) lineChart.destroy();
     lineChart = new Chart(ctx, {
       type: 'line',
-      data: { labels: ['No data'], datasets: [{ label: 'Scans', data: [0] }] },
+      data: { labels: ['No data'], datasets: [{ label: 'Scans', data: [0], borderColor: '#3b82f6' }] },
+      options: { responsive: true }
+    });
+  }
+}
+
+// ─── Avg Risk Score Evolution Chart (separate fetch) ──────────────
+async function loadAvgScoreChart() {
+  const ctx = document.getElementById('avgScoreChart');
+  if (!ctx) return;
+
+  try {
+    const res  = await fetch('/api/timeline?days=7');
+    const data = await res.json();
+
+    const labels = data.map(d => {
+      const date = new Date(d._id);
+      return date.toLocaleDateString('en', { month: 'short', day: 'numeric' });
+    });
+    const avgScores = data.map(d => parseFloat((d.avg_score || 0).toFixed(2)));
+
+    if (window.avgScoreChart && typeof window.avgScoreChart.destroy === 'function') {
+      window.avgScoreChart.destroy();
+    }
+
+    window.avgScoreChart = new Chart(ctx.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: labels.length ? labels : ['No data'],
+        datasets: [{
+          label: 'Avg Risk Score',
+          data: avgScores.length ? avgScores : [0],
+          borderColor: '#8b5cf6',
+          backgroundColor: 'rgba(139,92,246,0.12)',
+          pointBackgroundColor: '#8b5cf6',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: 6,
+          pointHoverRadius: 8,
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { labels: { color: '#94a3b8', font: { size: 11, family: 'Inter' }, boxWidth: 12, boxHeight: 12 } },
+          tooltip: {
+            backgroundColor: 'rgba(10,22,44,0.95)',
+            titleColor: '#f0f6ff',
+            bodyColor: '#94a3b8',
+            borderColor: 'rgba(139,92,246,0.4)',
+            borderWidth: 1,
+            callbacks: {
+              label: ctx => ` Avg Score: ${ctx.parsed.y.toFixed(2)} / 10`
+            }
+          }
+        },
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#64748b', font: { size: 11 } } },
+          y: {
+            grid: { color: 'rgba(255,255,255,0.04)' },
+            ticks: { color: '#64748b', font: { size: 11 } },
+            min: 0,
+            max: 10,
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  } catch(e) {
+    console.error('Avg Score chart error', e);
+    const fallbackCtx = document.getElementById('avgScoreChart').getContext('2d');
+    if (window.avgScoreChart && typeof window.avgScoreChart.destroy === 'function') {
+      window.avgScoreChart.destroy();
+    }
+    window.avgScoreChart = new Chart(fallbackCtx, {
+      type: 'line',
+      data: { labels: ['No data'], datasets: [{ label: 'Avg Risk Score', data: [0], borderColor: '#8b5cf6' }] },
       options: { responsive: true }
     });
   }
@@ -230,6 +316,7 @@ function renderTable() {
       ? new Date(entry.timestamp).toLocaleString('en', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
       : '—';
     const msg = escHtml((entry.text || '').substring(0, 80)) + (entry.text?.length > 80 ? '…' : '');
+    const confidence = entry.confidence ? `${entry.confidence}%` : '—';
 
     // Expandable explanation
     const expl = entry.explanation
@@ -249,6 +336,7 @@ function renderTable() {
             <span class="score-text" style="color:${color};">${score}/10</span>
           </div>
         </td>
+        <td style="font-weight:600;">${confidence}</td>
         <td><span class="threat-badge ${badgeCls}" style="font-size:0.73rem;">${escHtml(typeLabel)}</span></td>
         <td>${aiTag}</td>
         <td style="color:var(--text-muted);font-size:0.8rem;">${ts}</td>
@@ -259,6 +347,11 @@ function renderTable() {
             <option value="incorrect" ${entry.feedback === 'incorrect' ? 'selected' : ''}>✗ Wrong</option>
             <option value="unsure"    ${entry.feedback === 'unsure'    ? 'selected' : ''}>? Unsure</option>
           </select>
+        </td>
+        <td>
+          <button class="toolbar-btn btn-secondary" style="padding:0.3rem 0.5rem;font-size:0.75rem;" onclick="downloadReport('${entry._id}', 'message')">
+            <i class="fas fa-file-pdf"></i> Report
+          </button>
         </td>
       </tr>
     `;
@@ -409,6 +502,7 @@ window.searchLogs    = searchLogs;
 window.submitFeedback = submitFeedback;
 window.exportCSV     = exportCSV;
 window.goPage        = goPage;
+window.loadAvgScoreChart = loadAvgScoreChart;
 
 // ─── URL Scanner Dashboard Logic ─────────────────────────────────
 async function loadUrlSummary() {
@@ -438,12 +532,20 @@ async function loadUrlLogs() {
       if (entry.status === 'Malicious') statusColor = 'var(--high-color)';
       else if (entry.status === 'Suspicious') statusColor = '#f59e0b';
       
+      const conf = entry.confidence ? `${entry.confidence}%` : '—';
+      
       return `
         <tr>
           <td style="word-break:break-all;" title="${escHtml(entry.url)}">${escHtml(entry.url)}</td>
           <td style="color:${statusColor};font-weight:bold;">${entry.risk_score}/10</td>
+          <td style="font-weight:bold;">${conf}</td>
           <td><span style="color:${statusColor};">${escHtml(entry.status)}</span></td>
           <td style="color:var(--text-muted);font-size:0.8rem;">${ts}</td>
+          <td>
+            <button class="toolbar-btn btn-secondary" style="padding:0.3rem 0.5rem;font-size:0.75rem;" onclick="downloadReport('${entry._id}', 'url')">
+              <i class="fas fa-file-pdf"></i> Report
+            </button>
+          </td>
         </tr>
       `;
     }).join('');
@@ -520,3 +622,8 @@ async function loadUrlStats() {
 
   } catch(e) { console.error('URL Stats error', e); }
 }
+
+function downloadReport(id, type) {
+  window.open(`/api/report/${id}?type=${type}`, '_blank');
+}
+window.downloadReport = downloadReport;

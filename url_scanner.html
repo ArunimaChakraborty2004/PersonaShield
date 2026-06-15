@@ -191,9 +191,12 @@
         </div><!-- /url-details-grid -->
 
         <!-- Scan another -->
-        <div style="text-align:center;margin-top:1.5rem;">
+        <div style="text-align:center;margin-top:1.5rem;display:flex;justify-content:center;gap:1rem;">
           <button class="scan-btn btn-secondary" onclick="clearScan()">
             <i class="fas fa-arrow-left"></i> Scan another URL
+          </button>
+          <button class="scan-btn btn-primary" id="download-report-btn" style="display:none;" onclick="downloadCurrentReport()">
+            <i class="fas fa-file-pdf"></i> Download Report
           </button>
         </div>
 

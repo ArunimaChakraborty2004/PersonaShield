@@ -112,48 +112,75 @@ def analyze_message(message: str) -> dict:
     Main entry point. Tries Cohere first, falls back to keyword detector.
     Always returns a fully-formed threat result dict.
     """
+    base = detect_threat_json(message)
+    keyword_score = base["score"]
+    triggers = base.get("matched_keywords", []) + base.get("matched_phrases", [])
+
     # Try Cohere
     result = analyze_with_cohere(message)
+    
     if result is not None:
-        return result
-
-    # Fallback: keyword detector
-    base = detect_threat_json(message)
-    score = base["score"]
-
-    # Derive severity from score
-    if score == 0:
-        severity = "safe"
-    elif score <= 3:
-        severity = "low"
-    elif score <= 5:
-        severity = "medium"
-    elif score <= 7:
-        severity = "high"
+        ai_score = result["score"]
+        final_score = ai_score
+        ai_powered = True
+        
+        # Calculate confidence based on AI agreement and indicators
+        if abs(keyword_score - ai_score) <= 2:
+            confidence = 85 + min(10, len(triggers) * 2)
+        else:
+            confidence = 70 + min(15, int((min(keyword_score, ai_score) / 10) * 15))
+            
+        result["matched_keywords"] = base.get("matched_keywords", [])
+        result["matched_phrases"] = base.get("matched_phrases", [])
     else:
-        severity = "critical"
+        final_score = keyword_score
+        ai_powered = False
+        
+        # Base confidence calculation
+        confidence = 60 + int((keyword_score / 10) * 20) + min(10, len(triggers) * 2)
 
-    # Build a decent explanation from keywords
-    triggers = base.get("matched_keywords", []) + base.get("matched_phrases", [])
-    if triggers:
-        explanation = (
-            f"This message contains suspicious indicators: {', '.join(triggers[:5])}. "
-            f"These terms are commonly associated with {base.get('type', 'threat')} attacks. "
-            "Review carefully before taking any action."
-        )
-        recommendation = "Do not click links or share personal information. Verify the sender through official channels."
-    else:
-        explanation = "No significant threat indicators were found in this message."
-        recommendation = "This message appears safe, but always stay vigilant online."
+        # Derive severity from score
+        if final_score == 0:
+            severity = "safe"
+        elif final_score <= 3:
+            severity = "low"
+        elif final_score <= 5:
+            severity = "medium"
+        elif final_score <= 7:
+            severity = "high"
+        else:
+            severity = "critical"
 
-    return {
-        "score": score,
-        "type": base.get("type", "Safe"),
-        "threat_type": base.get("type", "Safe"),
-        "severity": severity,
-        "explanation": explanation,
-        "recommendation": recommendation,
-        "matched_keywords": base.get("matched_keywords", []),
-        "matched_phrases": base.get("matched_phrases", []),
-        "ai_powered": False
-    }
+        # Build a decent explanation from keywords
+        if triggers:
+            explanation = (
+                f"This message contains suspicious indicators: {', '.join(triggers[:5])}. "
+                f"These terms are commonly associated with {base.get('type', 'threat')} attacks. "
+                "Review carefully before taking any action."
+            )
+            recommendation = "Do not click links or share personal information. Verify the sender through official channels."
+        else:
+            explanation = "No significant threat indicators were found in this message."
+            recommendation = "This message appears safe, but always stay vigilant online."
+
+        result = {
+            "score": final_score,
+            "type": base.get("type", "Safe"),
+            "threat_type": base.get("type", "Safe"),
+            "severity": severity,
+            "explanation": explanation,
+            "recommendation": recommendation,
+            "matched_keywords": base.get("matched_keywords", []),
+            "matched_phrases": base.get("matched_phrases", []),
+            "ai_powered": False
+        }
+        
+    # Enforce Confidence Ranges
+    if final_score >= 7: # Malicious
+        result["confidence"] = max(85, min(confidence, 99))
+    elif final_score >= 4: # Suspicious
+        result["confidence"] = max(70, min(confidence, 90))
+    else: # Safe
+        result["confidence"] = max(60, min(confidence, 85))
+        
+    return result

@@ -129,6 +129,13 @@
           <canvas id="lineChart" height="220"></canvas>
         </div>
       </div>
+      
+      <div class="charts-row" style="margin-top: 1.5rem;">
+        <div class="glass-card chart-card">
+          <h3><i class="fas fa-wave-square" style="color:var(--accent-purple);margin-right:0.4rem;"></i>Average Risk Score Evolution</h3>
+          <canvas id="avgScoreChart" height="220"></canvas>
+        </div>
+      </div>
 
       <!-- ── Logs Table ── -->
       <div class="glass-card logs-card">
@@ -156,10 +163,12 @@
               <tr>
                 <th onclick="sortTable('text')">Message <i class="fas fa-sort" style="font-size:0.65rem;opacity:0.5;"></i></th>
                 <th onclick="sortTable('score')" style="width:140px;">Risk Score <i class="fas fa-sort" style="font-size:0.65rem;opacity:0.5;"></i></th>
+                <th style="width:110px;">Confidence</th>
                 <th style="width:150px;">Type</th>
-                <th style="width:110px;">AI</th>
+                <th style="width:90px;">AI</th>
                 <th onclick="sortTable('timestamp')" style="width:140px;">Time <i class="fas fa-sort" style="font-size:0.65rem;opacity:0.5;"></i></th>
                 <th style="width:120px;">Feedback</th>
+                <th style="width:120px;">Action</th>
               </tr>
             </thead>
             <tbody id="log-entries"></tbody>
@@ -185,8 +194,10 @@
               <tr>
                 <th>URL</th>
                 <th style="width:140px;">Risk Score</th>
+                <th style="width:110px;">Confidence</th>
                 <th style="width:150px;">Status</th>
                 <th style="width:200px;">Time</th>
+                <th style="width:120px;">Action</th>
               </tr>
             </thead>
             <tbody id="url-log-entries"></tbody>
