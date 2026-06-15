@@ -349,9 +349,14 @@ function renderTable() {
           </select>
         </td>
         <td>
-          <button class="toolbar-btn btn-secondary" style="padding:0.3rem 0.5rem;font-size:0.75rem;" onclick="downloadReport('${entry._id}', 'message')">
-            <i class="fas fa-file-pdf"></i> Report
-          </button>
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <button class="toolbar-btn btn-secondary" style="padding:0.3rem 0.5rem;font-size:0.75rem;" onclick="downloadReport('${entry._id}', 'message')">
+              <i class="fas fa-file-pdf"></i> Report
+            </button>
+            <button class="toolbar-btn btn-primary" style="padding:0.3rem 0.5rem;font-size:0.75rem;background:linear-gradient(135deg, var(--accent-purple), var(--accent-blue));border:none;" onclick="explainWithAI('${entry._id}')">
+              <i class="fas fa-brain"></i> Explain
+            </button>
+          </div>
         </td>
       </tr>
     `;
@@ -542,9 +547,14 @@ async function loadUrlLogs() {
           <td><span style="color:${statusColor};">${escHtml(entry.status)}</span></td>
           <td style="color:var(--text-muted);font-size:0.8rem;">${ts}</td>
           <td>
-            <button class="toolbar-btn btn-secondary" style="padding:0.3rem 0.5rem;font-size:0.75rem;" onclick="downloadReport('${entry._id}', 'url')">
-              <i class="fas fa-file-pdf"></i> Report
-            </button>
+            <div style="display:flex;flex-direction:column;gap:4px;">
+              <button class="toolbar-btn btn-secondary" style="padding:0.3rem 0.5rem;font-size:0.75rem;" onclick="downloadReport('${entry._id}', 'url')">
+                <i class="fas fa-file-pdf"></i> Report
+              </button>
+              <button class="toolbar-btn btn-primary" style="padding:0.3rem 0.5rem;font-size:0.75rem;background:linear-gradient(135deg, var(--accent-purple), var(--accent-blue));border:none;" onclick="explainWithAI('${entry._id}')">
+                <i class="fas fa-brain"></i> Explain
+              </button>
+            </div>
           </td>
         </tr>
       `;
@@ -626,4 +636,10 @@ async function loadUrlStats() {
 function downloadReport(id, type) {
   window.open(`/api/report/${id}?type=${type}`, '_blank');
 }
+
+function explainWithAI(id) {
+  window.location.href = `/security_assistant?scan_id=${id}`;
+}
+
 window.downloadReport = downloadReport;
+window.explainWithAI = explainWithAI;

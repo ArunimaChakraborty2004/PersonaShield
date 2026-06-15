@@ -35,7 +35,7 @@ def _get_client():
     try:
         import cohere
         import httpx
-        _cohere_client = cohere.Client(COHERE_API_KEY, httpx_client=httpx.Client(verify=False))
+        _cohere_client = cohere.Client(COHERE_API_KEY, timeout=180.0, httpx_client=httpx.Client(verify=False, timeout=180.0))
         print("[AI] Cohere client loaded successfully.")
     except Exception as e:
         print(f"[AI] Failed to load Cohere: {e}")

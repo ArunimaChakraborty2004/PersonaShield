@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PersonaShield — AI Security Assistant</title>
+  <meta name="description" content="PersonaShield AI Security Assistant to help you understand threats.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="security_assistant.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ======= SIDEBAR ======= -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <img src="avatar.png" alt="PersonaShield" class="brand-logo">
+      <div>
+        <div class="brand-name">PersonaShield</div>
+        <div class="brand-tagline">AI Security</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">Main</span>
+      <a href="/" class="nav-item" id="nav-chat">
+        <i class="fas fa-comment-shield"></i> Chat Analyzer
+      </a>
+      <a href="/dashboard" class="nav-item" id="nav-dashboard">
+        <i class="fas fa-chart-line"></i> Dashboard
+      </a>
+      <a href="/scanner" class="nav-item" id="nav-scanner">
+        <i class="fas fa-search-plus"></i> Bulk Scanner
+      </a>
+      <a href="/url_scanner" class="nav-item" id="nav-url-scanner">
+        <i class="fas fa-link"></i> URL Scanner
+      </a>
+      <a href="/security_assistant" class="nav-item active" id="nav-security-assistant">
+        <i class="fas fa-brain"></i> Security Assistant
+      </a>
+      <span class="nav-section-label">Info</span>
+      <a href="#" class="nav-item" onclick="return false;">
+        <i class="fas fa-shield-halved"></i> About
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <p>Made with ❤️ by <span>Arunima</span></p>
+      <p style="margin-top:4px;">© 2025 PersonaShield</p>
+    </div>
+  </aside>
+
+  <!-- ======= MAIN CONTENT ======= -->
+  <div class="main-content">
+
+    <!-- Header -->
+    <header class="top-header">
+      <div class="page-title">
+        <i class="fas fa-brain" style="color:var(--accent-purple);margin-right:0.5rem;"></i>
+        <span>AI Security Assistant</span>
+      </div>
+      <div class="header-status">
+        <button class="toolbar-btn btn-secondary" onclick="clearAssistantChat()">
+            <i class="fas fa-trash-can"></i> Clear Chat
+        </button>
+      </div>
+    </header>
+
+    <!-- Body -->
+    <div class="page-body" style="justify-content: center;">
+
+      <!-- ===== CHAT PANEL ===== -->
+      <div class="glass-card chat-panel" id="assistant-card" style="max-width: 900px; width: 100%;">
+
+        <!-- Messages -->
+        <div id="assistant-chat-box">
+          <!-- Welcome card inserted by JS -->
+        </div>
+
+        <!-- Typing -->
+        <div id="assistant-typing-indicator" class="hidden">
+          <img src="avatar.png" alt="Bot" class="msg-avatar">
+          <div class="typing-dots">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+
+        <!-- Input -->
+        <div id="input-area" style="position:relative;">
+          <input type="text" id="assistant-message-input"
+                 placeholder="Type your cybersecurity question..."
+                 onkeydown="if(event.key==='Enter'){sendAssistantMessage();}">
+          <button class="send-btn" style="background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));" onclick="sendAssistantMessage()" title="Send">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /page-body -->
+
+  </div><!-- /main-content -->
+</div><!-- /app-shell -->
+
+<script src="security_assistant.js"></script>
+</body>
+</html>

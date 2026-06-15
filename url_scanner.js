@@ -50,6 +50,9 @@ function displayResults(data) {
   currentScanId = data.scan_id || null;
   const btn = document.getElementById('download-report-btn');
   if(btn) btn.style.display = currentScanId ? 'inline-block' : 'none';
+  
+  const aiBtn = document.getElementById('explain-ai-btn');
+  if(aiBtn) aiBtn.style.display = currentScanId ? 'inline-block' : 'none';
 
   // Show results section
   document.getElementById('url-results').style.display = 'block';
@@ -228,8 +231,15 @@ function downloadCurrentReport() {
   }
 }
 
+function explainCurrentScan() {
+  if (currentScanId) {
+    window.location.href = `/security_assistant?scan_id=${currentScanId}`;
+  }
+}
+
 // ─── Expose globals for inline onclick handlers ────────────────
 window.scanUrl    = scanUrl;
 window.clearScan  = clearScan;
 window.loadSample = loadSample;
 window.downloadCurrentReport = downloadCurrentReport;
+window.explainCurrentScan = explainCurrentScan;

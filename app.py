@@ -5,10 +5,11 @@ from flask import Flask, request, jsonify, send_from_directory, send_file
 from flask_cors import CORS
 from ai_analyzer import analyze_message
 from url_scanner import scan_url
-from db import save_message, update_feedback, messages, save_url_scan, url_logs
+from db import save_message, update_feedback, messages, save_url_scan, url_logs, save_assistant_log
 from bson import ObjectId
 from datetime import datetime, timedelta
 from report_generator import generate_pdf_report
+from security_assistant import ask_security_assistant
 
 app = Flask(__name__)
 CORS(app)
@@ -29,6 +30,10 @@ def scanner():
 @app.route('/url_scanner')
 def url_scanner():
     return send_from_directory('.', 'url_scanner.html')
+
+@app.route('/security_assistant')
+def security_assistant():
+    return send_from_directory('.', 'security_assistant.html')
 
 @app.route('/<path:filename>')
 def static_files(filename):
@@ -346,6 +351,23 @@ def generate_report(scan_id):
     except Exception as e:
         print("Report generation error:", e)
         return jsonify({"error": str(e)}), 500
+
+# ─── Security Assistant ───────────────────────────────────────────
+@app.route('/api/security_assistant', methods=['POST'])
+def api_security_assistant():
+    data = request.get_json()
+    question = data.get('question', '')
+    explicit_scan_id = data.get('scan_id', None)
+    
+    if not question.strip():
+        return jsonify({"error": "No question provided"}), 400
+        
+    result = ask_security_assistant(question, explicit_scan_id)
+    
+    # Save log
+    save_assistant_log(question, result["answer"], explicit_scan_id)
+    
+    return jsonify(result)
 
 # ─── Launch ───────────────────────────────────────────────────────
 if __name__ == '__main__':

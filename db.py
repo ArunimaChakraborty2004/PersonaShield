@@ -20,6 +20,7 @@ try:
     messages = db["logs"]
     url_logs = db["url_logs"]
     url_intelligence = db["url_intelligence"]
+    assistant_logs = db["assistant_logs"]
     client.admin.command('ping')
     print("Connected to MongoDB Atlas successfully.")
 except Exception as e:
@@ -73,6 +74,15 @@ def save_url_scan(url, risk_score, status, explanation, recommendation, sources=
         "threat_type": threat_type,
         "domain_age": domain_age,
         "ai_powered": ai_powered,
+        "timestamp": datetime.utcnow()
+    })
+    return str(res.inserted_id)
+
+def save_assistant_log(question, answer, context_id=None):
+    res = assistant_logs.insert_one({
+        "question": question,
+        "answer": answer,
+        "context_id": context_id,
         "timestamp": datetime.utcnow()
     })
     return str(res.inserted_id)
